@@ -9,23 +9,17 @@ import os
 # -----------------------
 app = Flask(__name__)
 
-# -----------------------
-# 1️⃣ Database URL (Supabase)
-# Replace PASSWORD with your actual Supabase password
-# If your password has special characters like $, URL-encode it (%24)
-# Example: tedX123$adminPwd -> tedX123%24adminPwd
-# -----------------------
+
+db = SQLAlchemy(app)
+
 DATABASE_URL = os.environ.get(
     'DATABASE_URL',
-    'postgresql://postgres:admin123tedx@db.dhvghewuxuvbrughlumn.supabase.co:5432/postgres'
+    'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a:5432/dbname'
 )
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'connect_args': {'sslmode': 'require'}  # enforce SSL for Supabase
-}
-db = SQLAlchemy(app)
-
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'connect_args': {'sslmode': 'require'}}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # -----------------------
 # Secret key for session security
 # -----------------------
@@ -35,6 +29,9 @@ app.config['SECRET_KEY'] = os.environ.get(
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+ 
+
+db = SQLAlchemy(app)
 
 # -----------------------
 # Models

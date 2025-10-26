@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Buy page</h2>
+  <p>You're buying the product as <strong>{{ user.first_name }} {{ user.last_name }}</strong> ({{ user.email }})</p>
+  <p>Phone: {{ user.phone }}</p>
+
+  <div class="alert alert-secondary">Demo shu</div>
+
+  <a class="btn btn-success" href="{{ url_for('index') }}">Back to store</a>
+{% endblock %}

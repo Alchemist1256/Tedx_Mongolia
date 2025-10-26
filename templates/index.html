@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="jumbotron">
+    <h1 class="display-4">The Product</h1>
+    <p class="lead">Purchase the product for only $99.</p>
+    {% if user %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('buy') }}">Buy Now</a>
+    {% else %}
+      <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}">Buy Now</a>
+    {% endif %}
+  </div>
+{% endblock %}

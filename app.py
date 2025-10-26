@@ -21,15 +21,20 @@ DATABASE_URL = os.environ.get(
 )
 
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'connect_args': {'sslmode': 'require'}}
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'connect_args': {'sslmode': 'require'}  # enforce SSL for Supabase
+}
+db = SQLAlchemy(app)
 
 # -----------------------
 # Secret key for session security
 # -----------------------
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'Secret_Alchemist_randomkey_123$@')
+app.config['SECRET_KEY'] = os.environ.get(
+    'SECRET_KEY', 
+    'Secret_Alchemist_randomkey_123$@'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
 
 # -----------------------
 # Models

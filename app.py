@@ -9,9 +9,9 @@ import os
 # -----------------------
 app = Flask(__name__)
 
-
-db = SQLAlchemy(app)
-
+# -----------------------
+# Config
+# -----------------------
 DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a:5432/dbname'
@@ -20,18 +20,19 @@ DATABASE_URL = os.environ.get(
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'connect_args': {'sslmode': 'require'}}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# -----------------------
-# Secret key for session security
-# -----------------------
 app.config['SECRET_KEY'] = os.environ.get(
     'SECRET_KEY', 
     'Secret_Alchemist_randomkey_123$@'
 )
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
- 
-
+# -----------------------
+# Initialize DB
+# -----------------------
 db = SQLAlchemy(app)
+
+# Create tables once at startup
+with app.app_context():
+    db.create_all()
 
 # -----------------------
 # Models
@@ -70,13 +71,6 @@ def admin_required(f):
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
-
-# -----------------------
-# Initialize DB
-# -----------------------
-@app.before_request
-def create_tables():
-    db.create_all()
 
 # -----------------------
 # Routes

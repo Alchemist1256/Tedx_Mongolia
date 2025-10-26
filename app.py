@@ -31,6 +31,7 @@ db = SQLAlchemy(app)
 # Models
 # -----------------------
 class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(120), nullable=False)
     last_name = db.Column(db.String(120), nullable=False)
@@ -42,6 +43,8 @@ class User(db.Model):
 
     def check_password(self, plain):
         return check_password_hash(self.password_hash, plain)
+with app.app_context():
+    db.create_all()
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)

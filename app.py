@@ -5,13 +5,23 @@ from functools import wraps
 import os
 
 
+# -----------------------
+# App Configuration
+# -----------------------
 app = Flask(__name__)
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
+# Secret key for sessions (use environment variable on Render)
+app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
+
+# Database config (secure)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
 
 # -----------------------
 # Models
@@ -60,7 +70,7 @@ def admin_required(f):
 
 
 # -----------------------
-# Create tables (only once at startup)
+# Create tables once
 # -----------------------
 with app.app_context():
     db.create_all()
@@ -164,9 +174,11 @@ def admin_login():
     if request.method == 'POST':
         username = request.form.get('username', '')
         password = request.form.get('password', '')
-        if username == 'admin' and password == 'admin':
+        admin_user = os.environ.get("ADMIN_USER", "admin")
+        admin_pass = os.environ.get("ADMIN_PASS", "admin")
+        if username == admin_user and password == admin_pass:
             session['is_admin'] = True
-            session['admin_name'] = 'admin'
+            session['admin_name'] = admin_user
             return redirect(url_for('admin_dashboard'))
         return render_template('admin_login.html', error="Invalid admin credentials")
     return render_template('admin_login.html')
@@ -185,10 +197,12 @@ def admin_logout():
 @admin_required
 def admin_dashboard():
     users = User.query.order_by(User.created_at.desc()).all()
-    ticket_users = (User.query
-                        .join(Ticket, Ticket.user_id == User.id)
-                        .order_by(Ticket.created_at.desc())
-                        .all())
+    ticket_users = (
+        User.query
+        .join(Ticket, Ticket.user_id == User.id)
+        .order_by(Ticket.created_at.desc())
+        .all()
+    )
     return render_template(
         'admin.html',
         admin_name=session.get('admin_name'),
@@ -206,7 +220,7 @@ def admin_user_detail(user_id):
 
 
 # -----------------------
-# Run (local dev)
+# Run (Render-compatible)
 # -----------------------
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,12 +1,146 @@
-{% extends "base.html" %}
-{% block content %}
-  <div class="jumbotron">
-    <h1 class="display-4">The Product</h1>
-    <p class="lead">Purchase the product for only $99.</p>
-    {% if user %}
-      <a class="btn btn-primary btn-lg" href="{{ url_for('buy') }}">Buy Now</a>
-    {% else %}
-      <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}">Buy Now</a>
-    {% endif %}
-  </div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEDx Khan Uul District</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <a href="{{ url_for('index') }}">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+                </div>
+            </a>
+            <div class="header-links hide">
+                <a href="#introduction"> About Us </a>
+            </div>
+            <div class="header-links hide">
+                <a href="#speakers"> Speakers </a>
+            </div>
+            <div class="header-links hide">
+                <a href="#sponsors"> Sponsors </a>
+            </div>
+            </div>
+    <div class="header-right">
+        {% if not user %}
+            <div class="header-purchase-button">
+                <a href="{{ url_for('login') }}">Buy a Ticket</a>
+            </div>
+        {% else %}
+            <div class="header-purchase-button">
+                <a href="{{ url_for('buy') }}">Buy a Ticket</a>
+            </div>
+            <div class="header-language-button">
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        {% endif %}
+</div>
+
+    </div>
+
+    <!-- Cover -->
+    <div class="cover">
+        <div class="cover-container">
+            <div class="cover-title">
+                <div class="cover-title-first"> The Future </div>
+                <div class="cover-title-second"> We Create </div>
+            </div>
+            <div class="cover-bottom">
+                <div class="cover-date"> 2025.11.29 </div>
+                <div class="cover-purchase-button">
+                    {% if user %}
+                        <a href="{{ url_for('buy') }}">Buy a Ticket</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}">Buy a Ticket</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="cover-description"> TEDxKhan Uul District 2025 </div>
+    </div>
+
+
+    <!-- Introduction -->
+    <div class="introduction" id="introduction">
+        <div class="introduction-info">
+            <div class="introduction-title"> Introduction </div>
+            <div class="introduction-description">
+The future is not something that arrives fully formed. It grows from the conversations we start, the challenges we confront, and the choices we make every day. “The Future We Create” focuses on how ideas become action and how ordinary people become the authors of tomorrow.Our speakers represent many different fields and experiences. What they share is a belief that progress begins when someone asks a better question or imagines a better possibility. They encourage us to look beyond what we know, to pay attention to the changes around us, and to recognize that shaping the future is not a distant responsibility. It starts in our neighborhoods. It starts with our stories. It starts with us.The world ahead depends on how bravely we think today. Here on this stage, we explore the ideas that move us forward and the hope that keeps us building. The future is created by those willing to begin.            </div>
+        </div>
+        <div class="introduction-photo">
+            <img src="{{ url_for('static', filename='intro.jpg') }}">
+        </div>
+    </div>
+
+    <!-- Speakers -->
+    <div class="speakers" id="speakers">
+        <div class="speakers-title"> Speakers </div>
+        <div class="speakers-description">
+        </div>
+        <div class="speakers-facecards-container">
+            {% for i in range(18) %}
+            <div class="speakers-facecard">
+                <div class="speakers-image">
+                    <img src="{{ url_for('static', filename='speaker_1.png') }}">
+                </div>
+                <div class="speakers-name"> Anu-Ujin Lkhagvasuren </div>
+                <div class="speakers-topic"> How cities shape us?</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sponsors -->
+    <div class="sponsors" id="sponsors">
+        <div class="sponsors-title"> Sponsors </div>
+        <div class="sponsors-description">
+Being a partner of TEDxKhan Uul District means committing to the ideas and values ​​of openness, curiosity and positive impact carried by the TEDx movement.        </div>
+        <div class="sponsors-cards-container">
+            <div class="sponsors-card">
+                <img src="{{ url_for('static', filename='sponsor_1.png') }}">
+            </div>
+            <div class="sponsors-card">
+                <img src="{{ url_for('static', filename='sponsor_2.png') }}">
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="contact">
+                    <div class="contact-number">
+                        Tel:
+                        <a href="tel: +97698765432"> +976-95680220 </a>
+                    </div>
+                </div>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/tedxkhanuul.district" class="social-icon"><img src="{{ url_for('static', filename='instagram.png') }}"></a>
+                    <a href="#" class="social-icon"><img src="{{ url_for('static', filename='facebook.png') }}"></a>
+                    <a href="#" class="social-icon"><img src="{{ url_for('static', filename='youtube.png') }}"></a>
+                </div>
+                <div class="copyright">
+                    <p>&copy; TEDxKhan Uul District 2025</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function toggleForm(){
+            const container = document.querySelector("#account-forms-container");
+            container.classList.toggle("change");
+        }
+    </script>
+</body>
+</html>

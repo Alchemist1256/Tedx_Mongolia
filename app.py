@@ -1,52 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, session, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import os
 
-# -----------------------
-# Flask app setup
-# -----------------------
+
 app = Flask(__name__)
 
-# -----------------------
-# Secret key for session security
-# Keep a secure SECRET_KEY in Render environment variables for production.
-# -----------------------
-app.config['SECRET_KEY'] = os.environ.get(
-    'SECRET_KEY',
-    'Secret_Alchemist_randomkey_123$@'  # fallback for local dev only
-)
-
-# -----------------------
-# Database URL (Render/Supabase or fallback to local sqlite)
-# If DATABASE_URL uses the old "postgres://" scheme, SQLAlchemy prefers "postgresql://"
-# -----------------------
-DATABASE_URL = os.environ.get(
-    'DATABASE_URL',
-    'postgresql://postgres:tedX123%24adminPwd@db.iukbpbxmtyxynkfmyyxl.supabase.co:5432/postgres'
-)
-
-# ensure scheme is correct for SQLAlchemy
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-# For managed Postgres (Supabase/Render) require SSL
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'connect_args': {'sslmode': 'require'}}
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# -----------------------
-# Initialize DB (after config)
-# -----------------------
 db = SQLAlchemy(app)
 
 # -----------------------
 # Models
-# Note: use __tablename__ to avoid reserved-word issues ('user' is problematic)
 # -----------------------
 class User(db.Model):
-    __tablename__ = 'users'                  # safe table name
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(120), nullable=False)
     last_name = db.Column(db.String(120), nullable=False)
@@ -54,8 +25,6 @@ class User(db.Model):
     phone = db.Column(db.String(50), nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-
-    # One-to-many relationship -> Ticket.user_id references users.id
     tickets = db.relationship('Ticket', backref='user', lazy=True)
 
     def check_password(self, plain):
@@ -65,7 +34,6 @@ class User(db.Model):
 class Ticket(db.Model):
     __tablename__ = 'tickets'
     id = db.Column(db.Integer, primary_key=True)
-    # foreign key now correctly references users.id
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
@@ -74,7 +42,7 @@ class Ticket(db.Model):
 # Helpers
 # -----------------------
 def logged_in_user():
-    """Return current logged-in User object or None."""
+    """Return the current logged-in User object or None."""
     user_email = session.get('user_email')
     if not user_email:
         return None
@@ -82,7 +50,7 @@ def logged_in_user():
 
 
 def admin_required(f):
-    """Decorator to protect admin routes."""
+    """Decorator to protect admin-only routes."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('is_admin'):
@@ -92,7 +60,7 @@ def admin_required(f):
 
 
 # -----------------------
-# Create tables once at startup (safer than running on every request)
+# Create tables (only once at startup)
 # -----------------------
 with app.app_context():
     db.create_all()
@@ -129,7 +97,6 @@ def signup():
             error = "Email already registered."
 
         if error:
-            # show error in the signup template
             return render_template('signup.html', error=error,
                                    first=first, last=last, email=email, phone=phone)
 
@@ -143,7 +110,6 @@ def signup():
         db.session.add(user)
         db.session.commit()
 
-        # log in user
         session['user_email'] = email
         return redirect(url_for('index'))
 
@@ -161,6 +127,7 @@ def login():
         if user and user.check_password(password):
             session['user_email'] = user.email
             return redirect(url_for('index'))
+
         return render_template('login.html', error="Invalid credentials", email=email)
 
     return render_template('login.html')
@@ -191,12 +158,9 @@ def buy():
     return render_template('buy.html', user=user)
 
 
-# -----------------------
-# Admin routes
-# -----------------------
+# Admin login
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    # fixed credentials: admin / admin
     if request.method == 'POST':
         username = request.form.get('username', '')
         password = request.form.get('password', '')
@@ -208,6 +172,7 @@ def admin_login():
     return render_template('admin_login.html')
 
 
+# Admin logout
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('is_admin', None)
@@ -215,10 +180,10 @@ def admin_logout():
     return redirect(url_for('index'))
 
 
+# Admin dashboard
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    # all users and users who have tickets (join)
     users = User.query.order_by(User.created_at.desc()).all()
     ticket_users = (User.query
                         .join(Ticket, Ticket.user_id == User.id)
@@ -232,6 +197,7 @@ def admin_dashboard():
     )
 
 
+# Admin user detail
 @app.route('/admin/user/<int:user_id>')
 @admin_required
 def admin_user_detail(user_id):
@@ -243,5 +209,4 @@ def admin_user_detail(user_id):
 # Run (local dev)
 # -----------------------
 if __name__ == '__main__':
-    # in local dev keep debug=True, in production set DEBUG off
     app.run(debug=True)

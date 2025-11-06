@@ -1,19 +1,39 @@
-{% extends "base.html" %}
-{% block content %}
-  <h2>Login</h2>
-  {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
-  <form method="POST" class="mb-3">
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" class="form-control" name="email" required value="{{ email or '' }}">
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нэвтрэх | TEDx Khan Uul District</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+        </a>
     </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" class="form-control" name="password" required>
+
+    <div class="account-forms-container" id="account-forms-container">
+        <div class="login account-form">
+            <div class="account-form-title">Login</div>
+            <div class="account-form-container">
+                {% if login_error %}
+                    <div class="alert alert-danger">{{ login_error }}</div>
+                {% endif %}
+                <form method="POST" action="{{ url_for('login') }}">
+                    <input type="email" name="email" placeholder="Gmail" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit" class="account-button">Login</button>
+                </form>
+                <div class="account-buttons-gap">
+                    <div class="account-buttons-gap-line"></div>
+                    <div class="account-buttons-gap-text"> or </div>
+                </div>
+                <div class="account-button account-button-light">
+                    <a href="{{ url_for('signup') }}" style="text-decoration:none; color:inherit;">Signup</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <button class="btn btn-primary" type="submit">Login</button>
-    <a class="btn btn-link" href="{{ url_for('signup') }}">Create account</a>
-  </form>
-{% endblock %}
+</body>
+</html>

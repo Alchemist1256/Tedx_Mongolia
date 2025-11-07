@@ -175,7 +175,7 @@ def admin_login():
         username = request.form.get('username', '')
         password = request.form.get('password', '')
         admin_user = os.environ.get("ADMIN_USER", "admin")
-        admin_pass = os.environ.get("ADMIN_PASS", "admin")
+        admin_pass = os.environ.get("ADMIN_PASS", "adm1n123@randomSECURE")
         if username == admin_user and password == admin_pass:
             session['is_admin'] = True
             session['admin_name'] = admin_user

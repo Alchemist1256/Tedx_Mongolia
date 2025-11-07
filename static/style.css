@@ -812,6 +812,44 @@ a{
     justify-content: center;
     border-radius: 22px;
 }
+.alert {
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+/* Make logout button smaller on mobile */
+@media (max-width: 640px) {
+    .header-language-button {
+        font-size: 10px;      /* smaller text */
+        height: 28px;          /* smaller height */
+        min-width: 60px;       /* optional: control width */
+    }
+
+    .header-language-button a {
+        padding: 0 8px;        /* reduce padding inside button */
+        line-height: 28px;     /* align text vertically */
+    }
+}
+
+@media (max-width: 375px) {
+    .header-language-button {
+        font-size: 9px;
+        height: 24px;
+        min-width: 50px;
+    }
+    .header-language-button a {
+        padding: 0 6px;
+        line-height: 24px;
+    }
+}
 
 /* ------------------------------ */
 /* END */

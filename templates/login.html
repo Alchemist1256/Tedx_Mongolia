@@ -17,9 +17,10 @@
         <div class="login account-form">
             <div class="account-form-title">Login</div>
             <div class="account-form-container">
-                {% if login_error %}
-                    <div class="alert alert-danger">{{ login_error }}</div>
+                {% if error %}
+                   <div class="alert alert-danger">{{ error }}</div>
                 {% endif %}
+
                 <form method="POST" action="{{ url_for('login') }}">
                     <input type="email" name="email" placeholder="Gmail" required>
                     <input type="password" name="password" placeholder="Password" required>
@@ -29,9 +30,10 @@
                     <div class="account-buttons-gap-line"></div>
                     <div class="account-buttons-gap-text"> or </div>
                 </div>
-                <div class="account-button account-button-light">
-                    <a href="{{ url_for('signup') }}" style="text-decoration:none; color:inherit;">Signup</a>
-                </div>
+                <a href="{{ url_for('signup') }}" class="account-button account-button-light" style="text-decoration:none; color:inherit; display:block; text-align:center;">
+    Signup
+</a>
+
             </div>
         </div>
     </div>

@@ -1,19 +1,14 @@
-from flask import Flask, render_template, session, redirect, url_for, request
+from flask import Flask, render_template, session, redirect, url_for, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
+ 
 from functools import wraps
 import os
 
 
-# -----------------------
-# App Configuration
-# -----------------------
 app = Flask(__name__)
 
-# Secret key for sessions (use environment variable on Render)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
-# Database config (secure)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
@@ -22,10 +17,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-
-# -----------------------
-# Models
-# -----------------------
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -33,13 +24,12 @@ class User(db.Model):
     last_name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(200), unique=True, nullable=False)
     phone = db.Column(db.String(50), nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     tickets = db.relationship('Ticket', backref='user', lazy=True)
 
     def check_password(self, plain):
-        return check_password_hash(self.password_hash, plain)
-
+        return self.password == plain
 
 class Ticket(db.Model):
     __tablename__ = 'tickets'
@@ -48,9 +38,6 @@ class Ticket(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 
-# -----------------------
-# Helpers
-# -----------------------
 def logged_in_user():
     """Return the current logged-in User object or None."""
     user_email = session.get('user_email')
@@ -69,23 +56,16 @@ def admin_required(f):
     return decorated_function
 
 
-# -----------------------
-# Create tables once
-# -----------------------
 with app.app_context():
     db.create_all()
 
 
-# -----------------------
-# Routes
-# -----------------------
 @app.route('/')
 def index():
     user = logged_in_user()
     return render_template('index.html', user=user)
 
 
-# Signup
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -115,7 +95,7 @@ def signup():
             last_name=last,
             email=email,
             phone=phone,
-            password_hash=generate_password_hash(password)
+            password=password
         )
         db.session.add(user)
         db.session.commit()
@@ -126,7 +106,7 @@ def signup():
     return render_template('signup.html')
 
 
-# Login
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -138,12 +118,12 @@ def login():
             session['user_email'] = user.email
             return redirect(url_for('index'))
 
-        return render_template('login.html', error="Invalid credentials", email=email)
+        return render_template('login.html', error="Gmail or password is wrong", email=email)
 
     return render_template('login.html')
 
 
-# Logout
+
 @app.route('/logout')
 def logout():
     session.pop('user_email', None)
@@ -151,8 +131,6 @@ def logout():
     session.pop('admin_name', None)
     return redirect(url_for('index'))
 
-
-# Buy tickets
 @app.route('/buy', methods=['GET', 'POST'])
 def buy():
     user = logged_in_user()
@@ -163,28 +141,40 @@ def buy():
         ticket = Ticket(user_id=user.id)
         db.session.add(ticket)
         db.session.commit()
-        return render_template('buy_success.html', user=user)
+        return redirect(url_for('ticket_success', ticket_id=ticket.id))
 
     return render_template('buy.html', user=user)
 
 
-# Admin login
+@app.route('/ticket/<int:ticket_id>')
+def ticket_success(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    user = ticket.user
+    return render_template('ticket_success.html', ticket=ticket, user=user)
+
+@app.route('/inquiry', methods=['POST'])
+def inquiry():
+    order_id = request.form.get('order_id')
+    # Call your bank API here and return JSON
+    return jsonify({
+        "status": "paid",
+        "status_text": "Төлбөр амжилттай хийгдлээ"
+    })
+
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username', '')
         password = request.form.get('password', '')
-        admin_user = os.environ.get("ADMIN_USER", "admin")
-        admin_pass = os.environ.get("ADMIN_PASS", "adm1n123@randomSECURE")
-        if username == admin_user and password == admin_pass:
+        if username == 'admin' and password == 'adm1n123@randomSECURE':
             session['is_admin'] = True
-            session['admin_name'] = admin_user
+            session['admin_name'] = 'admin'
             return redirect(url_for('admin_dashboard'))
         return render_template('admin_login.html', error="Invalid admin credentials")
     return render_template('admin_login.html')
 
 
-# Admin logout
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('is_admin', None)
@@ -192,17 +182,14 @@ def admin_logout():
     return redirect(url_for('index'))
 
 
-# Admin dashboard
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
     users = User.query.order_by(User.created_at.desc()).all()
-    ticket_users = (
-        User.query
-        .join(Ticket, Ticket.user_id == User.id)
-        .order_by(Ticket.created_at.desc())
-        .all()
-    )
+    ticket_users = (User.query
+                        .join(Ticket, Ticket.user_id == User.id)
+                        .order_by(Ticket.created_at.desc())
+                        .all())
     return render_template(
         'admin.html',
         admin_name=session.get('admin_name'),
@@ -211,16 +198,11 @@ def admin_dashboard():
     )
 
 
-# Admin user detail
 @app.route('/admin/user/<int:user_id>')
 @admin_required
 def admin_user_detail(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('user_detail.html', user=user)
 
-
-# -----------------------
-# Run (Render-compatible)
-# -----------------------
 if __name__ == '__main__':
     app.run(debug=True)

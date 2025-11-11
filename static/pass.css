@@ -1,0 +1,180 @@
+#pass-payment {
+    background: #242834;
+    width: 300px;
+    height: 490px;
+    border-radius: 12px;
+    float:left;
+}
+
+#pass-payment-top {
+    color: white;
+    height: 110px;
+    width: inherit;
+}
+
+#pass-payment-top-info,
+#pass-payment-top-timer {
+    height: inherit;
+    width: 50%;
+    float: left;
+}
+
+#pass-payment-top-info {
+    padding-top: 15px;
+    padding-left: 15px;
+}
+
+#pass-payment-top-info-merchant-label,
+#pass-payment-top-info-amount-label {
+    margin-bottom: 3px;
+    color: #dbdbdb;
+}
+
+#pass-payment-top-info-merchant-name,
+#pass-payment-top-info-amount-value {
+    font-weight: bold;
+    margin-bottom: 3px;
+    padding-left: 5px;
+}
+
+#pass-payment-top-timer {
+    position: relative;
+    margin-left: 75px;
+    margin-top: 11px;
+    padding-top: 15px;
+    height: 40px;
+    width: 60px;
+    text-align: center;
+}
+
+#pass-payment-top-timer-number {
+    color: white;
+    display: inline-block;
+    line-height: 40px;
+    font-size: 13px;
+}
+
+#pass-payment-top-timer svg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 65px;
+  height: 65px;
+  transform: rotateY(-180deg) rotateZ(-90deg);
+}
+
+#pass-payment-top-timer svg circle {
+  stroke-dasharray: 156px;
+  stroke-dashoffset: 0px;
+  stroke-linecap: round;
+  stroke-width: 3px;
+  stroke: #34e35e;
+  fill: none;
+}
+
+.animated {
+  animation: countdown 300s linear infinite forwards;
+}
+
+@keyframes countdown {
+  from {
+    stroke-dashoffset: 0px;
+  }
+  to {
+    stroke-dashoffset: 156px;
+  }
+}
+
+#pass-payment-help-text {
+    color: #dbdbdb;
+    text-align: center;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 11pt;
+}
+
+#pass-payment-qr {
+    margin-top: 15px;
+}
+
+#pass-payment-qr-code {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#pass-payment-phone {
+    margin-top: 5px;
+}
+
+#pass-payment-phone #pass-payment-phone-input {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    border-radius: 9px;
+    height: 38px;
+    border-color: #34e35e87;
+    background-color: #242834;
+    color: #34e35e;
+    text-align:center;
+    font-size:10pt;
+}
+
+:-moz-placeholder {
+   font-style: italic;  
+}
+
+::-moz-placeholder {
+   font-style: italic;  
+}
+
+:-ms-input-placeholder {  
+   font-style: italic; 
+}
+
+#pass-payment-control a:link,
+#pass-payment-control a:visited,
+#pass-payment-control a:hover,
+#pass-payment-control a:active {
+    text-decoration: none;
+}
+
+#pass-payment-control a:hover {
+    background: #34e35e;
+    color: #242834;
+}
+
+#pass-payment-control {
+    margin-top: 15px;
+}
+
+#pass-payment-control-phone-link {
+    background: #34e35e;
+    color:  #242934;
+    width: 65%;
+    border-radius: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 35px;
+    text-align: center;
+    padding: 7px;
+}
+
+#pass-payment-control-cancel-link {
+    background: #242834;
+    color:  #34e35e;
+    width: 65%;
+    border-radius: 40px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 35px;
+    text-align: center;
+    padding: 7px;
+    margin-top: 10px;
+}

@@ -1,0 +1,27 @@
+<div id="pass-payment" style="display:none;">
+    <div id="pass-payment-top">
+        <div id="pass-payment-top-info">
+            <div id="pass-payment-top-info-merchant-label">Merchant</div>
+            <div id="pass-payment-top-info-merchant-name"></div>
+            <div id="pass-payment-top-info-amount-label">Мөнгөн дүн</div>
+            <div id="pass-payment-top-info-amount-value"></div>
+        </div>
+        <div id="pass-payment-top-timer">
+            <div id="pass-payment-top-timer-number"></div>
+            <svg>
+                <circle r="25" cx="30" cy="30" id="pass-payment-top-timer-circle"></circle>
+            </svg>
+        </div>
+    </div>
+    <div id="pass-payment-qr">
+        <canvas id="pass-payment-qr-code"></canvas>
+    </div>
+    <div id="pass-payment-help-text">Та QR кодыг уншуулах эсвэл утасны дугаараа оруулан төлбөр тооцоогоо хийнэ үү.</div>
+    <div id="pass-payment-phone">
+        <input type="number" id="pass-payment-phone-input" placeholder="Утасны дугаараа оруулна уу" />
+    </div>
+    <div id="pass-payment-control">
+        <a id="pass-payment-control-phone-link" onclick="javascript:notify_phone();" href="#">Үргэлжлүүлэх</a>
+        <a id="pass-payment-control-cancel-link" onclick="javascript:cancel_order();" href="#">Цуцлах</a>
+    </div>
+</div>

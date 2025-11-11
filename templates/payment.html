@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <title>Төлбөрийн хуудас</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='pass.css') }}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="{{ url_for('static', filename='pass.js') }}"></script>
+</head>
+
+<body>
+  <h2>Төлбөр хийх</h2>
+  <button onclick="startPayment()">Төлбөр эхлүүлэх</button>
+
+  {% include 'pass_widget.html' %}
+
+  <script>
+    function startPayment() {
+      const merchant = "My Store";
+      const amount = "15000";
+      const order_id = "ORDER_12345";  // QR code / bank order ID
+      const ttl = 120; // seconds to expire
+
+      init_widget(merchant, amount, order_id, ttl);
+    }
+  </script>
+</body>
+</html>

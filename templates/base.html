@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEDx Khan Uul District</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <a href="{{ url_for('index') }}">
+                <div class="logo-container">
+                    <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+                </div>
+            </a>
+            <div class="header-links hide">
+                <a href="./#introduction"> About Us </a>
+            </div>
+            <div class="header-links hide">
+                <a href="./#speakers"> Speakers </a>
+            </div>
+            <div class="header-links hide">
+                <a href="./#sponsors"> Sponsors </a>
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-purchase-button">
+                {% if user %}
+                    <a href="{{ url_for('buy') }}">Buy a Ticket</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Buy a Ticket</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <div class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="contact">
+                    <div class="contact-number">
+                        Tel: <a href="tel: +97698765432"> +976-98765432 </a>
+                    </div>
+                </div>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/tedxkhanuul.district" class="social-icon">
+                        <img src="{{ url_for('static', filename='instagram.png') }}">
+                    </a>
+                    <a href="#" class="social-icon">
+                        <img src="{{ url_for('static', filename='facebook.png') }}">
+                    </a>
+                    <a href="#" class="social-icon">
+                        <img src="{{ url_for('static', filename='youtube.png') }}">
+                    </a>
+                </div>
+                <div class="copyright">
+                    <p>&copy; TEDxKhan Uul District 2025</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

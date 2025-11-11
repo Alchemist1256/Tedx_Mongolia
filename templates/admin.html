@@ -1,0 +1,16 @@
+<table>
+  <tr>
+    <th>Нэр</th>
+    <th>Email</th>
+    <th>Төлбөр төлсөн эсэх</th>
+  </tr>
+  {% for user in users %}
+    {% set paid_ticket = user.tickets|selectattr('paid')|list %}
+    <tr {% if paid_ticket %} style="color: #4CAF50; font-weight:bold;" {% endif %}>
+      <td>{{ user.first_name }} {{ user.last_name }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.password }}</td>
+      <td>{% if paid_ticket %}Төлсөн{% else %}Төлөөгүй{% endif %}</td>
+    </tr>
+  {% endfor %}
+</table>

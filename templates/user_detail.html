@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>User Detail</h2>
+  <dl class="row">
+    <dt class="col-sm-3">ID</dt><dd class="col-sm-9">{{ user.id }}</dd>
+    <dt class="col-sm-3">First name</dt><dd class="col-sm-9">{{ user.first_name }}</dd>
+    <dt class="col-sm-3">Last name</dt><dd class="col-sm-9">{{ user.last_name }}</dd>
+    <dt class="col-sm-3">Email</dt><dd class="col-sm-9">{{ user.email }}</dd>
+    <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">{{ user.phone }}</dd>
+  </dl>
+
+  <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">Back to users</a>
+{% endblock %}

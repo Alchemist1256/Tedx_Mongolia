@@ -5,14 +5,12 @@ import os
 import requests
 
 app = Flask(__name__)
-
-# Secret key from environment
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
-# PostgreSQL Database on Render
+# Render PostgreSQL database
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq"
+    'DATABASE_URL',
+    'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -64,7 +62,66 @@ def index():
     user = logged_in_user()
     return render_template('index.html', user=user)
 
-# ... [Signup, Login, Logout кодыг хэвээр хадгална] ...
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        first = request.form.get('first_name', '').strip()
+        last = request.form.get('last_name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '')
+        confirm = request.form.get('confirm_password', '')
+
+        error = None
+        if not (first and last and email and phone and password and confirm):
+            error = "All fields are required."
+        elif not email.endswith('@gmail.com'):
+            error = "Email must be a Gmail address."
+        elif password != confirm:
+            error = "Passwords do not match."
+        elif User.query.filter_by(email=email).first():
+            error = "Email already registered."
+
+        if error:
+            return render_template('signup.html', error=error,
+                                   first=first, last=last, email=email, phone=phone)
+
+        user = User(
+            first_name=first,
+            last_name=last,
+            email=email,
+            phone=phone,
+            password=password
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        session['user_email'] = email
+        return redirect(url_for('index'))
+
+    return render_template('signup.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+
+        user = User.query.filter_by(email=email).first()
+        if user and user.check_password(password):
+            session['user_email'] = user.email
+            return redirect(url_for('index'))
+
+        return render_template('login.html', error="Gmail or password is wrong", email=email)
+
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_email', None)
+    session.pop('is_admin', None)
+    session.pop('admin_name', None)
+    return redirect(url_for('index'))
 
 # ------------------- Buy / Payment -------------------
 @app.route('/buy', methods=['GET', 'POST'])
@@ -75,8 +132,6 @@ def buy():
 
     test_token = "3be353ef85434197a76dd0645a170dc6"
     amount = "20000"
-
-    # ✅ Render-н URL-д тохируулсан callback
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
@@ -92,12 +147,8 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
-            resp = requests.post(
-                "https://ecom.pass.mn/openapi/v1/ecom/create_order",
-                json=payload,
-                headers=headers,
-                timeout=10
-            )
+            resp = requests.post("https://ecom.pass.mn/openapi/v1/ecom/create_order",
+                                 json=payload, headers=headers, timeout=10)
             data = resp.json()
             print("API response:", data)
 
@@ -105,12 +156,11 @@ def buy():
                 order_id = data["ret"].get("order_id")
                 payment_url = data["ret"].get("payment_url")
             else:
-                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа. API хариу буруу байна."
+                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
             print("Error calling API:", e)
-            error_msg = "Төлбөр үүсгэхэд алдаа гарлаа. Серверт алдаа гарлаа."
+            error_msg = "Серверт алдаа гарлаа."
 
-        # Save ticket to DB
         if order_id:
             ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
             db.session.add(ticket)
@@ -135,6 +185,12 @@ def callback():
 
     return "", 200
 
+@app.route('/ticket/<int:ticket_id>')
+def ticket_success(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    user = ticket.user
+    return render_template('ticket_success.html', ticket=ticket, user=user)
+
 # ------------------- Admin -------------------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -148,11 +204,23 @@ def admin_login():
         return render_template('admin_login.html', error="Invalid admin credentials")
     return render_template('admin_login.html')
 
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('is_admin', None)
+    session.pop('admin_name', None)
+    return redirect(url_for('index'))
+
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
     users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin.html', admin_name=session.get('admin_name'), users=users)
+
+@app.route('/admin/user/<int:user_id>')
+@admin_required
+def admin_user_detail(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('user_detail.html', user=user)
 
 # ------------------- Run -------------------
 if __name__ == '__main__':

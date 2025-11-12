@@ -4,6 +4,9 @@ from functools import wraps
 import os
 import requests
 from sqlalchemy import text, inspect
+import qrcode
+import io
+import base64
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
@@ -126,6 +129,7 @@ def logout():
     return redirect(url_for('index'))
 
 # ----- Buy / Payment -----
+
 @app.route('/buy', methods=['GET', 'POST'])
 def buy():
     user = logged_in_user()
@@ -139,6 +143,7 @@ def buy():
     payment_url = None
     error_msg = None
     api_response = None
+    qr_code_base64 = None
 
     if request.method == 'POST':
         payload = {
@@ -162,9 +167,19 @@ def buy():
                 ret = data["ret"]
                 order_id = ret.get("order_id")
 
-                # Pass.mn returns order_id as the full payment URL
                 if order_id:
-                    payment_url = order_id  # Use it directly as the payment URL
+                    payment_url = order_id
+                    
+                    # Generate QR code
+                    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+                    qr.add_data(payment_url)
+                    qr.make(fit=True)
+                    img = qr.make_image(fill_color="black", back_color="white")
+                    
+                    # Convert to base64 for HTML display
+                    buffered = io.BytesIO()
+                    img.save(buffered, format="PNG")
+                    qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
                     
                     # For database storage, extract just the UUID
                     order_uuid = order_id.split("/")[-1] if "/" in order_id else order_id
@@ -191,9 +206,9 @@ def buy():
         amount=amount,
         payment_url=payment_url,
         error_msg=error_msg,
-        api_response=api_response
+        api_response=api_response,
+        qr_code_base64=qr_code_base64
     )
-
 @app.route('/buy_test', methods=['GET', 'POST'])
 def buy_test():
     user = logged_in_user()

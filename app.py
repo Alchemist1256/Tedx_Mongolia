@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, render_template, session, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
@@ -12,7 +11,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 # Database config
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
-    'postgresql://user:password@host:port/dbname'
+    'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -160,13 +159,28 @@ def buy():
             api_response = data
 
             if data.get("status_code") == "ok" and "ret" in data:
-                order_id = data["ret"].get("order_id")
-                if order_id and (order_id.startswith("http://") or order_id.startswith("https://")):
-                    payment_url = order_id
+                ret = data["ret"]
+                order_id = ret.get("order_id")
+
+                # Check for deeplink first (Pass.mn returns this)
+                if "deeplink" in ret:
+                    payment_url = ret["deeplink"]
+                elif "payment_url" in ret:
+                    payment_url = ret["payment_url"]
                 elif order_id:
-                    payment_url = f"https://pass.mn/order/{order_id}"
+                    if order_id.startswith("http://") or order_id.startswith("https://"):
+                        payment_url = order_id
+                    else:
+                        # Use staging domain since we're using staging API
+                        payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
                 else:
                     error_msg = "Order ID буцаагдсангүй"
+
+                # Save ticket to database if we have order_id
+                if order_id and not error_msg:
+                    ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
+                    db.session.add(ticket)
+                    db.session.commit()
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data.get('message', 'Unknown error')}"
 
@@ -219,11 +233,25 @@ def buy_test():
             api_response = data
 
             if data.get("status_code") == "ok" and "ret" in data:
-                order_id = data["ret"].get("order_id")
-                if order_id and (order_id.startswith("http://") or order_id.startswith("https://")):
-                    payment_url = order_id
+                ret = data["ret"]
+                order_id = ret.get("order_id")
+
+                # Check for deeplink first
+                if "deeplink" in ret:
+                    payment_url = ret["deeplink"]
+                elif "payment_url" in ret:
+                    payment_url = ret["payment_url"]
                 elif order_id:
-                    payment_url = f"https://pass.mn/order/{order_id}"
+                    if order_id.startswith("http://") or order_id.startswith("https://"):
+                        payment_url = order_id
+                    else:
+                        payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
+
+                # Save ticket to database
+                if order_id:
+                    ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
+                    db.session.add(ticket)
+                    db.session.commit()
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
@@ -246,7 +274,7 @@ def callback():
         data = request.json
         if not data:
             return {"error": "No data received"}, 400
-        
+
         order_id = data.get('order_id')
         status = data.get('status')
 

@@ -119,6 +119,41 @@
             margin-bottom: 15px;
             font-size: 14px;
         }
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+        .qr-container img {
+            max-width: 250px;
+            border: 10px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        .instructions {
+            font-size: 14px;
+            color: #666;
+            margin: 15px 0;
+            text-align: left;
+            line-height: 1.8;
+        }
+        .instructions strong {
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .download-link {
+            color: #667eea;
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .download-link:hover {
+            text-decoration: underline;
+        }
         .payment-link {
             display: inline-block;
             padding: 14px 35px;
@@ -129,11 +164,17 @@
             font-weight: bold;
             transition: all 0.3s ease;
             font-size: 16px;
+            margin-top: 10px;
         }
         .payment-link:hover {
             background: #45a049;
             transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        .order-id {
+            margin-top: 15px;
+            font-size: 11px;
+            color: #999;
         }
         .back-link {
             display: block;
@@ -190,13 +231,38 @@
         {% endif %}
 
         {% if payment_url %}
-            <div class="success">
-                <h3>✅ Төлбөрийн холбоос бэлэн!</h3>
-                <p>Доорх товч дээр дарж төлбөрөө төлнө үү</p>
-                <a href="{{ payment_url }}" target="_blank" class="payment-link">
-                    Төлбөр төлөх →
-                </a>
+        <div class="success">
+            <h3>✅ Төлбөрийн холбоос бэлэн!</h3>
+            
+            {% if qr_code_base64 %}
+            <div class="qr-container">
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" 
+                     alt="QR Code">
             </div>
+            {% endif %}
+            
+            <div class="instructions">
+                <strong>📱 Утсаар QR код уншуулна уу:</strong>
+                
+                1️⃣ Pass.mn апп татаж суулгана уу<br>
+                <a href="https://repo.databank.mn/apk/pass-v411.apk" 
+                   class="download-link">
+                   📥 Pass.mn APK татах
+                </a><br><br>
+                
+                2️⃣ Pass.mn апп нээж QR код уншуулна уу<br><br>
+                
+                3️⃣ Эсвэл доорх товч дээр утаснаасаа дарна уу
+            </div>
+            
+            <a href="{{ payment_url }}" class="payment-link">
+                📱 Pass.mn-ээр төлөх
+            </a>
+            
+            <p class="order-id">
+                Order: {{ payment_url.split('/')[-1] }}
+            </p>
+        </div>
         {% endif %}
 
         {% if api_response %}

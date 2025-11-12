@@ -130,7 +130,7 @@ def buy():
     if not user:
         return redirect(url_for('login'))
 
-    test_token = "3be353ef85434197a76dd0645a170dc6"
+    test_token = "3be353ef85434197a76dd0645a170dc6"  # STG токен
     amount = "20000"
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
@@ -138,7 +138,6 @@ def buy():
     order_id = None
     error_msg = None
 
-    # POST request ирсэн тохиолдолд API дуудлага хийх
     if request.method == 'POST':
         payload = {
             "ecommerce_token": test_token,
@@ -148,29 +147,26 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
+            # STG API endpoint руу хүсэлт явуулах
             resp = requests.post(
-                "https://ecom.pass.mn/openapi/v1/ecom/create_order",
-                json=payload, headers=headers, timeout=10
+                "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
+                json=payload,
+                headers=headers,
+                timeout=10
             )
             data = resp.json()
-            print("API response:", data)
+            print("API response:", data)  # Debugging
 
             if data and "ret" in data and data["ret"]:
                 order_id = data["ret"].get("order_id")
                 payment_url = data["ret"].get("payment_url")
             else:
-                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
+                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа. API response буруу байна."
         except Exception as e:
-            print("Error calling API:", e)
+            print("Error calling STG API:", e)
             error_msg = "Серверт алдаа гарлаа."
 
-        # Хэрвээ API амжилтгүй эсвэл response хоосон бол тест URL ашиглах
-        if not payment_url:
-            order_id = "test_order_123"
-            payment_url = f"https://example.com/pay/{order_id}"  # Тест URL
-            error_msg = None  # Хэрэглэгчдэд алдаа харагдуулахгүй
-
-        # Ticket-ийг DB-д хадгалах
+        # Ticket DB-д хадгалах
         if order_id:
             ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
             db.session.add(ticket)
@@ -183,7 +179,6 @@ def buy():
         payment_url=payment_url,
         error_msg=error_msg
     )
-
 
 @app.route('/callback', methods=['POST'])
 def callback():

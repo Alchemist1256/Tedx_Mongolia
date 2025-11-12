@@ -11,16 +11,18 @@
         .buy-button { background: #e62b1e; color: white; padding: 15px 25px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 20px; }
         .buy-button:disabled { background: gray; cursor: not-allowed; }
         .error-msg { color: red; margin-top: 15px; }
+        pre { text-align: left; background: #f0f0f0; padding: 10px; border-radius: 8px; overflow-x: auto; max-height: 300px; }
     </style>
 </head>
 <body>
     <div class="buy-container">
         <h2>Тасалбар худалдаа</h2>
         <p>Төлбөрийн хэмжээ: {{ amount }}₮</p>
-{% if api_response %}
-    <h3>API Response (Debug):</h3>
-    <pre>{{ api_response | tojson(indent=2) }}</pre>
-{% endif %}
+
+        {% if api_response %}
+            <h3>API Response (Debug):</h3>
+            <pre>{{ api_response | tojson(indent=2) }}</pre>
+        {% endif %}
 
         {% if error_msg %}
             <div class="error-msg">{{ error_msg }}</div>
@@ -34,4 +36,3 @@
     </div>
 </body>
 </html>
-

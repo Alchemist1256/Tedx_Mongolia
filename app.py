@@ -147,19 +147,28 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
-            # STG API-д хүсэлт илгээх
-            resp = requests.post("https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
-                                 json=payload, headers=headers, timeout=10)
+            # STG API руу хүсэлт илгээх
+            resp = requests.post(
+                "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
+                json=payload,
+                headers=headers,
+                timeout=10
+            )
             data = resp.json()
-            print("API response:", data)
+            print("API response:", data)  # DEBUG
 
+            # API амжилттай эсэхийг шалгах
             if data.get("status_code") == "ok" and "ret" in data:
-                order_id = data["ret"].get("order_id")  # Энэ нь төлбөрийн холбоос
-                payment_url = order_id  # Хэрэглэгчид харуулах URL
+                payment_url = data["ret"].get("order_id")  # Энэ нь төлбөрийн URL
+                if payment_url:
+                    order_id = payment_url  # DB-д хадгалах
+                else:
+                    error_msg = "Төлбөрийн холбоос олдсонгүй."
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
+
         except Exception as e:
-            print("Error calling API:", e)
+            print("Error calling STG API:", e)
             error_msg = "Серверт алдаа гарлаа."
 
         # Ticket DB-д хадгалах
@@ -173,7 +182,6 @@ def buy():
                            amount=amount,
                            payment_url=payment_url,
                            error_msg=error_msg)
-
 
 @app.route('/callback', methods=['POST'])
 def callback():

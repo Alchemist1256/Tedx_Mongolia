@@ -138,6 +138,7 @@ def buy():
     order_id = None
     error_msg = None
 
+    # POST request ирсэн тохиолдолд API дуудлага хийх
     if request.method == 'POST':
         payload = {
             "ecommerce_token": test_token,
@@ -149,30 +150,25 @@ def buy():
         try:
             resp = requests.post(
                 "https://ecom.pass.mn/openapi/v1/ecom/create_order",
-                json=payload,
-                headers=headers,
-                timeout=10
+                json=payload, headers=headers, timeout=10
             )
             data = resp.json()
-            print("API response:", data)  # Debug
+            print("API response:", data)
 
             if data and "ret" in data and data["ret"]:
                 order_id = data["ret"].get("order_id")
                 payment_url = data["ret"].get("payment_url")
-                if not payment_url:
-                    error_msg = "Төлбөрийн холбоос бэлэн биш байна."
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
             print("Error calling API:", e)
             error_msg = "Серверт алдаа гарлаа."
 
-        # API амжилтгүй бол тест линк ашиглах
+        # Хэрвээ API амжилтгүй эсвэл response хоосон бол тест URL ашиглах
         if not payment_url:
-            order_id = f"test_order_{user.id}"
-            payment_url = f"https://example.com/pay/{order_id}"
-            # Тест линк байгаа тул алдааг харуулах шаардлагагүй
-            error_msg = None
+            order_id = "test_order_123"
+            payment_url = f"https://example.com/pay/{order_id}"  # Тест URL
+            error_msg = None  # Хэрэглэгчдэд алдаа харагдуулахгүй
 
         # Ticket-ийг DB-д хадгалах
         if order_id:

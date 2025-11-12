@@ -279,36 +279,101 @@ def buy_test():
     )
 
 # ---------- Callback route ----------
-@app.route('/callback', methods=['POST'])
+# ---------- Callback route ----------
+@app.route('/callback', methods=['POST', 'GET'])
 def callback():
     try:
-        data = request.json
+        # Pass.mn might send data as JSON or form data
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form.to_dict()
+        
+        print(f"Callback received: {data}")  # For debugging
+        
         if not data:
             return {"error": "No data received"}, 400
 
-        order_id = data.get('order_id')
-        status = data.get('status')
+        order_id = data.get('order_id') or data.get('orderId')
+        status = data.get('status') or data.get('payment_status')
+        
+        # Extract just the UUID if it's a full URL
+        if order_id and ('http://' in order_id or 'https://' in order_id):
+            order_id = order_id.split('/')[-1]
 
-        # Төлбөр амжилттай бол Ticket үүсгэх
-        if status == "paid":
-            user_email = data.get('user_email')
-            if user_email:
-                user = User.query.filter_by(email=user_email).first()
-                if user:
-                    ticket = Ticket(user_id=user.id, order_id=order_id, status="paid")
-                    db.session.add(ticket)
+        print(f"Order ID: {order_id}, Status: {status}")
+
+        # Update ticket status
+        if order_id:
+            ticket = Ticket.query.filter_by(order_id=order_id).first()
+            if ticket:
+                if status in ["paid", "success", "completed"]:
+                    ticket.status = "paid"
                     db.session.commit()
+                    print(f"Ticket {ticket.id} marked as paid")
                     return {"success": True, "ticket_id": ticket.id}, 200
+                else:
+                    ticket.status = status or "pending"
+                    db.session.commit()
 
         return {"success": True}, 200
     except Exception as e:
+        print(f"Callback error: {str(e)}")
         return {"error": str(e)}, 500
+
+@app.route('/check_payment/<order_id>')
+def check_payment(order_id):
+    """Check if payment is complete and redirect accordingly"""
+    user = logged_in_user()
+    if not user:
+        return redirect(url_for('login'))
+    
+    ticket = Ticket.query.filter_by(order_id=order_id, user_id=user.id).first()
+    
+    if not ticket:
+        return render_template('payment_status.html', 
+                             status='error', 
+                             message='Тасалбар олдсонгүй')
+    
+    if ticket.status == 'paid':
+        return redirect(url_for('ticket_success', ticket_id=ticket.id))
+    else:
+        return render_template('payment_status.html', 
+                             status='pending', 
+                             message='Төлбөр хүлээгдэж байна...',
+                             order_id=order_id,
+                             ticket=ticket)
 
 @app.route('/ticket/<int:ticket_id>')
 def ticket_success(ticket_id):
+    user = logged_in_user()
+    if not user:
+        return redirect(url_for('login'))
+    
     ticket = Ticket.query.get_or_404(ticket_id)
-    return render_template('ticket_success.html', ticket=ticket, user=ticket.user)
+    
+    # Make sure user owns this ticket
+    if ticket.user_id != user.id:
+        return "Access denied", 403
+    
+    return render_template('ticket_success.html', ticket=ticket, user=user)
 
+@app.route('/api/check_payment_status/<order_id>')
+def api_check_payment_status(order_id):
+    user = logged_in_user()
+    if not user:
+        return {"error": "Not logged in"}, 401
+    
+    ticket = Ticket.query.filter_by(order_id=order_id, user_id=user.id).first()
+    
+    if not ticket:
+        return {"error": "Ticket not found"}, 404
+    
+    return {
+        "status": ticket.status,
+        "ticket_id": ticket.id,
+        "order_id": ticket.order_id
+    }
 # ----- Admin -----
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

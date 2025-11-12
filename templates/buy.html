@@ -176,6 +176,15 @@
             font-size: 11px;
             color: #999;
         }
+        .checking-status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #856404;
+        }
         .back-link {
             display: block;
             text-align: center;
@@ -259,6 +268,10 @@
                 📱 Pass.mn-ээр төлөх
             </a>
             
+            <div id="status-check" class="checking-status" style="display: none;">
+                ⏳ Төлбөрийн төлөв шалгаж байна...
+            </div>
+            
             <p class="order-id">
                 Order: {{ payment_url.split('/')[-1] }}
             </p>
@@ -274,5 +287,34 @@
 
         <a href="{{ url_for('index') }}" class="back-link">← Нүүр хуудас руу буцах</a>
     </div>
+
+    {% if payment_url and not error_msg %}
+    <script>
+        // Show status checking message
+        setTimeout(function() {
+            document.getElementById('status-check').style.display = 'block';
+        }, 2000);
+
+        // Auto-check payment status every 5 seconds
+        const orderId = "{{ payment_url.split('/')[-1] }}";
+        const checkInterval = setInterval(function() {
+            fetch('/api/check_payment_status/' + orderId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'paid') {
+                        clearInterval(checkInterval);
+                        document.getElementById('status-check').innerHTML = '✅ Төлбөр амжилттай! Шилжүүлж байна...';
+                        document.getElementById('status-check').style.background = '#d4edda';
+                        document.getElementById('status-check').style.borderColor = '#28a745';
+                        document.getElementById('status-check').style.color = '#155724';
+                        setTimeout(function() {
+                            window.location.href = '/ticket/' + data.ticket_id;
+                        }, 1000);
+                    }
+                })
+                .catch(err => console.log('Checking payment...'));
+        }, 5000);
+    </script>
+    {% endif %}
 </body>
 </html>

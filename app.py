@@ -134,11 +134,12 @@ def buy():
         return redirect(url_for('login'))
 
     test_token = "3be353ef85434197a76dd0645a170dc6"
-    amount = "20000"
+    amount = 20000  # Changed to integer
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
     error_msg = None
+    api_response = None  # Added this
 
     if request.method == 'POST':
         payload = {
@@ -156,10 +157,11 @@ def buy():
                 timeout=10
             )
             data = resp.json()
+            api_response = data  # Store the response for debugging
 
-            if data.get("status_code") == "ok" and data.get("ret"):
-                # API-с ирсэн order_id-ийг авч зөв форматлах
+            if data.get("status_code") == "ok" and "ret" in data:
                 order_id = data["ret"].get("order_id")
+                # Clean up the order_id if needed
                 if order_id.startswith("http://") or order_id.startswith("https://"):
                     payment_url = order_id
                 else:
@@ -175,9 +177,9 @@ def buy():
         user=user,
         amount=amount,
         payment_url=payment_url,
-        error_msg=error_msg
+        error_msg=error_msg,
+        api_response=api_response  # Added this
     )
-
 
 
 # ---------- Callback route ----------

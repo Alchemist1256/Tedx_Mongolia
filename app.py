@@ -162,29 +162,33 @@ def buy():
                 ret = data["ret"]
                 order_id = ret.get("order_id")
 
-                # ⚙️ Pass.mn API-аас бүрэн URL ирдэг бол шууд ашиглана
-                if order_id and (order_id.startswith("http://") or order_id.startswith("https://")):
-                    payment_url = order_id
-                elif order_id:
-                    # Хэрвээ зөвхөн ID хэлбэртэй бол staging domain ашиглана
-                    payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
+                # IMPORTANT: Use the exact URL from the API response
+                # Pass.mn should return the correct payment URL
+                if "deeplink" in ret:
+                    payment_url = ret["deeplink"]
+                elif "payment_url" in ret:
+                    payment_url = ret["payment_url"]
+                elif "url" in ret:
+                    payment_url = ret["url"]
                 else:
-                    error_msg = "Order ID буцаагдсангүй."
+                    # If no URL in response, construct it carefully
+                    # For staging environment, might need different domain
+                    error_msg = f"Payment URL not found in response. API returned: {ret.keys()}"
 
-                # ✅ Тасалбар DB-д хадгалах
-                if order_id:
+                # Save ticket to database if we have order_id
+                if order_id and payment_url:
                     ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
                     db.session.add(ticket)
                     db.session.commit()
             else:
-                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
+                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data.get('message', 'Unknown error')}"
 
         except requests.exceptions.Timeout:
-            error_msg = "⏱️ Хүсэлт хугацаа хэтрэв. Дахин оролдоно уу."
+            error_msg = "Хүсэлт хугацаа хэтрэв. Дахин оролдоно уу."
         except requests.exceptions.RequestException as e:
-            error_msg = f"🌐 Сүлжээний алдаа: {str(e)}"
+            error_msg = f"Сүлжээний алдаа: {str(e)}"
         except Exception as e:
-            error_msg = f"⚠️ Серверт алдаа гарлаа: {str(e)}"
+            error_msg = f"Серверт алдаа гарлаа: {str(e)}"
 
     return render_template(
         "buy.html",

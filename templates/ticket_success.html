@@ -2,13 +2,101 @@
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
-    <title>Тасалбар амжилттай</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тасалбар амжилттай - TEDx Khan Uul</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 500px; 
+            width: 100%;
+            padding: 40px; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        h2 { 
+            color: #2e7d32; 
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        .ticket-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .ticket-info p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .ticket-info strong {
+            color: #333;
+        }
+        .ticket-id {
+            background: #e62b1e;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+        .button {
+            display: inline-block;
+            padding: 14px 35px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
-    <h1>Тасалбар амжилттай авлаа!</h1>
-    <p>Хэрэглэгч: {{ user.first_name }} {{ user.last_name }}</p>
-    <p>Тасалбар ID: {{ ticket.id }}</p>
-    <p>Захиалгын дугаар: {{ ticket.order_id }}</p>
-    <p>Төлбөрийн статус: {{ ticket.status }}</p>
+    <div class="container">
+        <div class="success-icon">🎉</div>
+        <h2>Тасалбар амжилттай худалдан авлаа!</h2>
+        
+        <div class="ticket-info">
+            <p><strong>Нэр:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Утас:</strong> {{ user.phone }}</p>
+            <p><strong>Огноо:</strong> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') if ticket.created_at else 'N/A' }}</p>
+        </div>
+        
+        <div class="ticket-id">
+            🎟️ #{{ ticket.id }}
+        </div>
+        
+        <p style="color: #666; font-size: 14px; margin: 20px 0;">
+            Та энэ тасалбараа үзүүлэн TEDx Khan Uul 2024 арга хэмжээнд оролцоно уу!
+        </p>
+        
+        <a href="{{ url_for('index') }}" class="button">← Нүүр хуудас руу буцах</a>
+    </div>
 </body>
 </html>

@@ -1,33 +1,37 @@
+<!-- templates/buy.html -->
 <!DOCTYPE html>
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тасалбар худалдан авах - TEDx Khan Uul</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Тасалбар худалдаа</title>
     <style>
-        .buy-container { max-width: 500px; margin: 50px auto; text-align: center; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
-        .buy-container h2 { margin-bottom: 20px; }
-        .buy-button { background: #e62b1e; color: white; padding: 15px 25px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 20px; }
-        .buy-button:disabled { background: gray; cursor: not-allowed; }
-        .error-msg { color: red; margin-top: 15px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f9fa; }
+        h1 { color: #333; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .error { color: red; margin-bottom: 15px; }
+        .amount { font-weight: bold; font-size: 1.2em; margin-bottom: 20px; }
+        button, a.button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px; cursor: pointer; }
+        button:hover, a.button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
-    <div class="buy-container">
-        <h2>Тасалбар худалдаа</h2>
-        <p>Төлбөрийн хэмжээ: {{ amount }}₮</p>
+    <div class="container">
+        <h1>Тасалбар худалдаа</h1>
 
         {% if error_msg %}
-            <div class="error-msg">{{ error_msg }}</div>
+            <div class="error">{{ error_msg }}</div>
         {% endif %}
 
+        <div class="amount">Төлбөрийн хэмжээ: {{ amount }}₮</div>
+
+        <form method="POST">
+            <button type="submit">Төлбөр хийх</button>
+        </form>
+
         {% if payment_url %}
-            <a href="{{ payment_url }}" class="buy-button">Тасалбар худалдан авах</a>
-        {% else %}
-            <form method="post">
-                <button class="buy-button" type="submit">Төлбөр холбоос үүсгэх</button>
-            </form>
+            <p>Төлбөр үүссэн! <a href="{{ payment_url }}" class="button" target="_blank">Төлбөр хийх холбоос</a></p>
+            <p>Таны тасалбар амжилттай үүссэн. <a href="{{ url_for('ticket_success', ticket_id=ticket.id) }}">Тасалбар харах</a></p>
         {% endif %}
     </div>
 </body>

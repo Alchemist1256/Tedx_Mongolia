@@ -133,12 +133,13 @@ def buy():
     if not user:
         return redirect(url_for('login'))
 
-    test_token = "3be353ef85434197a76dd0645a170dc6"
+    test_token = "3be353ef85434197a76dd0645a170dc6"  # Test token
     amount = "20000"
-    callback_url = "https://tedx-mongolia.onrender.com/callback"
+    callback_url = url_for('callback', _external=True)
 
     payment_url = None
     error_msg = None
+    api_response = None
 
     if request.method == 'POST':
         payload = {
@@ -156,9 +157,13 @@ def buy():
                 timeout=10
             )
             data = resp.json()
+            api_response = data  # Debug purposes
 
-            if data.get("status_code") == "ok" and "ret" in data:
-                payment_url = data["ret"].get("url")  # API-аас шууд ирсэн төлбөрийн холбоос
+            if data.get("status_code") == "ok" and data.get("ret"):
+                order_id = data["ret"].get("order_id")
+                # Төлбөрийн холбоос зөв үүсэх
+                payment_url = f"https://pass.mn/order/{order_id}"
+                # **Тасалбарыг зөвхөн callback-д үүсгэнэ**
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
@@ -166,11 +171,12 @@ def buy():
             error_msg = f"Серверт алдаа гарлаа: {e}"
 
     return render_template(
-        "buy.html",
+        "buy_test.html",  # эсвэл өөр html-д ашиглаж болно
         user=user,
         amount=amount,
         payment_url=payment_url,
-        error_msg=error_msg
+        error_msg=error_msg,
+        api_response=api_response
     )
 
 

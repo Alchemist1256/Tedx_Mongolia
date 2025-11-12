@@ -139,27 +139,42 @@ def buy():
 
     payment_url = None
     error_msg = None
-    ticket = None
 
     if request.method == 'POST':
-        payload = {"ecommerce_token": test_token, "amount": amount, "callback_url": callback_url}
+        payload = {
+            "ecommerce_token": test_token,
+            "amount": amount,
+            "callback_url": callback_url
+        }
         headers = {"Content-Type": "application/json"}
+
         try:
-            resp = requests.post("https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
-                                 json=payload, headers=headers, timeout=10)
+            resp = requests.post(
+                "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
+                json=payload,
+                headers=headers,
+                timeout=10
+            )
             data = resp.json()
+
             if data.get("status_code") == "ok" and "ret" in data:
+                # Төлбөр хийх холбоосыг зөв гаргаж байна
                 order_id = data["ret"].get("order_id")
-                ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
-                db.session.add(ticket)
-                db.session.commit()
-                payment_url = order_id
+                payment_url = f"https://pass.mn/order/{order_id}"
+                # Тасалбарыг зөвхөн callback-д үүсгэнэ
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
             error_msg = f"Серверт алдаа гарлаа: {e}"
 
-    return render_template("buy.html", user=user, amount=amount, payment_url=payment_url, error_msg=error_msg, ticket=ticket)
+    return render_template(
+        "buy.html",
+        user=user,
+        amount=amount,
+        payment_url=payment_url,
+        error_msg=error_msg
+    )
+
 
 @app.route('/callback', methods=['POST'])
 def callback():

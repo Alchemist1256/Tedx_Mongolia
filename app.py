@@ -130,7 +130,7 @@ def buy():
     if not user:
         return redirect(url_for('login'))
 
-    test_token = "3be353ef85434197a76dd0645a170dc6"  # STG токен
+    test_token = "3be353ef85434197a76dd0645a170dc6"
     amount = "20000"
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
@@ -147,23 +147,19 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
-            # STG API endpoint руу хүсэлт явуулах
-            resp = requests.post(
-                "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
-                json=payload,
-                headers=headers,
-                timeout=10
-            )
+            # STG API-д хүсэлт илгээх
+            resp = requests.post("https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
+                                 json=payload, headers=headers, timeout=10)
             data = resp.json()
-            print("API response:", data)  # Debugging
+            print("API response:", data)
 
-            if data and "ret" in data and data["ret"]:
-                order_id = data["ret"].get("order_id")
-                payment_url = data["ret"].get("payment_url")
+            if data.get("status_code") == "ok" and "ret" in data:
+                order_id = data["ret"].get("order_id")  # Энэ нь төлбөрийн холбоос
+                payment_url = order_id  # Хэрэглэгчид харуулах URL
             else:
-                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа. API response буруу байна."
+                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
-            print("Error calling STG API:", e)
+            print("Error calling API:", e)
             error_msg = "Серверт алдаа гарлаа."
 
         # Ticket DB-д хадгалах
@@ -172,13 +168,12 @@ def buy():
             db.session.add(ticket)
             db.session.commit()
 
-    return render_template(
-        "buy.html",
-        user=user,
-        amount=amount,
-        payment_url=payment_url,
-        error_msg=error_msg
-    )
+    return render_template("buy.html",
+                           user=user,
+                           amount=amount,
+                           payment_url=payment_url,
+                           error_msg=error_msg)
+
 
 @app.route('/callback', methods=['POST'])
 def callback():

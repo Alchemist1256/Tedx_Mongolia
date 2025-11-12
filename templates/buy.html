@@ -17,6 +17,10 @@
     <div class="buy-container">
         <h2>Тасалбар худалдаа</h2>
         <p>Төлбөрийн хэмжээ: {{ amount }}₮</p>
+{% if api_response %}
+    <h3>API Response (Debug):</h3>
+    <pre>{{ api_response | tojson(indent=2) }}</pre>
+{% endif %}
 
         {% if error_msg %}
             <div class="error-msg">{{ error_msg }}</div>
@@ -30,3 +34,4 @@
     </div>
 </body>
 </html>
+

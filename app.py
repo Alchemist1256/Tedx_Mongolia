@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request, jsonify
+from flask import Flask, render_template, session, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
@@ -7,7 +7,7 @@ import requests
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
-# Render PostgreSQL database
+# Database
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
@@ -40,10 +40,10 @@ class Ticket(db.Model):
 
 # ------------------- Helpers -------------------
 def logged_in_user():
-    user_email = session.get('user_email')
-    if not user_email:
+    email = session.get('user_email')
+    if not email:
         return None
-    return User.query.filter_by(email=user_email).first()
+    return User.query.filter_by(email=email).first()
 
 def admin_required(f):
     @wraps(f)
@@ -86,16 +86,9 @@ def signup():
             return render_template('signup.html', error=error,
                                    first=first, last=last, email=email, phone=phone)
 
-        user = User(
-            first_name=first,
-            last_name=last,
-            email=email,
-            phone=phone,
-            password=password
-        )
+        user = User(first_name=first, last_name=last, email=email, phone=phone, password=password)
         db.session.add(user)
         db.session.commit()
-
         session['user_email'] = email
         return redirect(url_for('index'))
 
@@ -106,14 +99,11 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
-
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
-            session['user_email'] = user.email
+            session['user_email'] = email
             return redirect(url_for('index'))
-
         return render_template('login.html', error="Gmail or password is wrong", email=email)
-
     return render_template('login.html')
 
 @app.route('/logout')
@@ -130,7 +120,7 @@ def buy():
     if not user:
         return redirect(url_for('login'))
 
-    test_token = "3be353ef85434197a76dd0645a170dc6"
+    test_token = "3be353ef85434197a76dd0645a170dc6"  # Test token
     amount = "20000"
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
@@ -155,21 +145,23 @@ def buy():
             data = resp.json()
 
             if data.get("status_code") == "ok" and "ret" in data:
-                payment_url = data["ret"].get("order_id")  # Төлбөрийн холбоос
+                payment_url = data["ret"].get("order_id")
+                
+                # Ticket үүсгэх
+                ticket = Ticket(user_id=user.id, order_id=payment_url, status="pending")
+                db.session.add(ticket)
+                db.session.commit()
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
-            print("API call error:", e)
-            error_msg = "Серверт алдаа гарлаа."
+            error_msg = f"Серверт алдаа гарлаа: {e}"
 
-    return render_template(
-        "buy.html",
-        user=user,
-        amount=amount,
-        payment_url=payment_url,
-        error_msg=error_msg
-    )
-    
+    return render_template("buy.html",
+                           user=user,
+                           amount=amount,
+                           payment_url=payment_url,
+                           error_msg=error_msg)
+
 @app.route('/callback', methods=['POST'])
 def callback():
     data = request.json
@@ -180,7 +172,6 @@ def callback():
     if ticket and status == "paid":
         ticket.status = "paid"
         db.session.commit()
-
     return "", 200
 
 @app.route('/ticket/<int:ticket_id>')
@@ -188,50 +179,6 @@ def ticket_success(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
     user = ticket.user
     return render_template('ticket_success.html', ticket=ticket, user=user)
-# ------------------- Buy Test (Debug) -------------------
-@app.route('/buy_test', methods=['GET', 'POST'])
-def buy_test():
-    payment_url = None
-    api_response = None
-    error_msg = None
-
-    if request.method == 'POST':
-        test_token = "3be353ef85434197a76dd0645a170dc6"
-        amount = "20000"
-        callback_url = "https://tedx-mongolia.onrender.com/callback"
-
-        payload = {
-            "ecommerce_token": test_token,
-            "amount": amount,
-            "callback_url": callback_url
-        }
-        headers = {"Content-Type": "application/json"}
-
-        try:
-            resp = requests.post(
-                "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
-                json=payload,
-                headers=headers,
-                timeout=10
-            )
-            data = resp.json()
-            api_response = data
-
-            if data.get("status_code") == "ok" and "ret" in data:
-                payment_url = data["ret"].get("order_id")
-            else:
-                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
-
-        except Exception as e:
-            error_msg = f"Серверт алдаа гарлаа: {e}"
-
-    return render_template(
-        "buy_test.html",
-        payment_url=payment_url,
-        api_response=api_response,
-        error_msg=error_msg
-    )
-
 
 # ------------------- Admin -------------------
 @app.route('/admin/login', methods=['GET', 'POST'])

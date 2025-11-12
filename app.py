@@ -37,7 +37,7 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     order_id = db.Column(db.String(200), nullable=True)
-    status = db.Column(db.String(50), default="pending")  # pending / paid
+    status = db.Column(db.String(50), default="pending")
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 # ---------------- Helpers ----------------
@@ -134,12 +134,12 @@ def buy():
         return redirect(url_for('login'))
 
     test_token = "3be353ef85434197a76dd0645a170dc6"
-    amount = 20000  # Changed to integer
+    amount = 20000
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
     error_msg = None
-    api_response = None  # Added this
+    api_response = None
 
     if request.method == 'POST':
         payload = {
@@ -157,20 +157,25 @@ def buy():
                 timeout=10
             )
             data = resp.json()
-            api_response = data  # Store the response for debugging
+            api_response = data
 
             if data.get("status_code") == "ok" and "ret" in data:
                 order_id = data["ret"].get("order_id")
-                # Clean up the order_id if needed
-                if order_id.startswith("http://") or order_id.startswith("https://"):
+                if order_id and (order_id.startswith("http://") or order_id.startswith("https://")):
                     payment_url = order_id
-                else:
+                elif order_id:
                     payment_url = f"https://pass.mn/order/{order_id}"
+                else:
+                    error_msg = "Order ID буцаагдсангүй"
             else:
-                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
+                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data.get('message', 'Unknown error')}"
 
+        except requests.exceptions.Timeout:
+            error_msg = "Хүсэлт хугацаа хэтрэв. Дахин оролдоно уу."
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Сүлжээний алдаа: {str(e)}"
         except Exception as e:
-            error_msg = f"Серверт алдаа гарлаа: {e}"
+            error_msg = f"Серверт алдаа гарлаа: {str(e)}"
 
     return render_template(
         "buy.html",
@@ -178,32 +183,9 @@ def buy():
         amount=amount,
         payment_url=payment_url,
         error_msg=error_msg,
-        api_response=api_response  # Added this
+        api_response=api_response
     )
 
-
-# ---------- Callback route ----------
-@app.route('/callback', methods=['POST'])
-def callback():
-    data = request.json
-    order_id = data.get('order_id')
-    status = data.get('status')
-
-    # Төлбөр амжилттай бол Ticket үүсгэх
-    if status == "paid":
-        user_email = data.get('user_email')  # API-аас илгээж байвал
-        user = User.query.filter_by(email=user_email).first()
-        if user:
-            ticket = Ticket(user_id=user.id, order_id=order_id, status="paid")
-            db.session.add(ticket)
-            db.session.commit()
-
-    return "", 200
-
-@app.route('/ticket/<int:ticket_id>')
-def ticket_success(ticket_id):
-    ticket = Ticket.query.get_or_404(ticket_id)
-    return render_template('ticket_success.html', ticket=ticket, user=ticket.user)
 @app.route('/buy_test', methods=['GET', 'POST'])
 def buy_test():
     user = logged_in_user()
@@ -238,13 +220,15 @@ def buy_test():
 
             if data.get("status_code") == "ok" and "ret" in data:
                 order_id = data["ret"].get("order_id")
-                payment_url = f"https://pass.mn/order/{order_id}"
-                error_msg = None
+                if order_id and (order_id.startswith("http://") or order_id.startswith("https://")):
+                    payment_url = order_id
+                elif order_id:
+                    payment_url = f"https://pass.mn/order/{order_id}"
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
         except Exception as e:
-            error_msg = f"Серверт алдаа гарлаа: {e}"
+            error_msg = f"Серверт алдаа гарлаа: {str(e)}"
 
     return render_template(
         "buy_test.html",
@@ -255,6 +239,36 @@ def buy_test():
         api_response=api_response
     )
 
+# ---------- Callback route ----------
+@app.route('/callback', methods=['POST'])
+def callback():
+    try:
+        data = request.json
+        if not data:
+            return {"error": "No data received"}, 400
+        
+        order_id = data.get('order_id')
+        status = data.get('status')
+
+        # Төлбөр амжилттай бол Ticket үүсгэх
+        if status == "paid":
+            user_email = data.get('user_email')
+            if user_email:
+                user = User.query.filter_by(email=user_email).first()
+                if user:
+                    ticket = Ticket(user_id=user.id, order_id=order_id, status="paid")
+                    db.session.add(ticket)
+                    db.session.commit()
+                    return {"success": True, "ticket_id": ticket.id}, 200
+
+        return {"success": True}, 200
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.route('/ticket/<int:ticket_id>')
+def ticket_success(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    return render_template('ticket_success.html', ticket=ticket, user=ticket.user)
 
 # ----- Admin -----
 @app.route('/admin/login', methods=['GET', 'POST'])

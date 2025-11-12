@@ -1,38 +1,25 @@
-<!-- templates/buy.html -->
 <!DOCTYPE html>
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тасалбар худалдаа</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f9fa; }
-        h1 { color: #333; }
-        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .error { color: red; margin-bottom: 15px; }
-        .amount { font-weight: bold; font-size: 1.2em; margin-bottom: 20px; }
-        button, a.button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px; cursor: pointer; }
-        button:hover, a.button:hover { background-color: #0056b3; }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Тасалбар худалдаа</h1>
+    <h1>Тасалбар худалдаа</h1>
+    <p>Төлбөрийн хэмжээ: {{ amount }}₮</p>
 
-        {% if error_msg %}
-            <div class="error">{{ error_msg }}</div>
-        {% endif %}
+    {% if error_msg %}
+        <p style="color: red;">{{ error_msg }}</p>
+    {% endif %}
 
-        <div class="amount">Төлбөрийн хэмжээ: {{ amount }}₮</div>
-
+    {% if payment_url %}
+        <p>Төлбөр хийх холбоос:</p>
+        <a href="{{ payment_url }}" target="_blank">Төлбөр төлөх</a>
+        <p>Төлбөр төлөгдсөний дараа тасалбар гарч ирнэ.</p>
+    {% else %}
         <form method="POST">
-            <button type="submit">Төлбөр хийх</button>
+            <button type="submit">Тасалбар худалдан авах</button>
         </form>
-
-        {% if payment_url %}
-            <p>Төлбөр үүссэн! <a href="{{ payment_url }}" class="button" target="_blank">Төлбөр хийх холбоос</a></p>
-            <p>Таны тасалбар амжилттай үүссэн. <a href="{{ url_for('ticket_success', ticket_id=ticket.id) }}">Тасалбар харах</a></p>
-        {% endif %}
-    </div>
+    {% endif %}
 </body>
 </html>

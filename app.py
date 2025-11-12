@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request
+from flask import Flask, render_template, session, redirect, url_for, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
@@ -8,7 +8,7 @@ from sqlalchemy import text, inspect
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
-# Render PostgreSQL database
+# Database config
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
@@ -54,16 +54,20 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ------------------- Create tables & ensure order_id -------------------
+# ------------------- DB Setup -------------------
 with app.app_context():
     db.create_all()
-
     inspector = inspect(db.engine)
     columns = [c['name'] for c in inspector.get_columns('tickets')]
+
     if 'order_id' not in columns:
-        print("Adding 'order_id' column to tickets table")
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);'))
+            conn.commit()
+
+    if 'status' not in columns:
+        with db.engine.connect() as conn:
+            conn.execute(text("ALTER TABLE tickets ADD COLUMN status VARCHAR(50) DEFAULT 'pending';"))
             conn.commit()
 
 # ------------------- Routes -------------------
@@ -72,6 +76,7 @@ def index():
     user = logged_in_user()
     return render_template('index.html', user=user)
 
+# ---------- Signup / Login / Logout ----------
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -96,16 +101,9 @@ def signup():
             return render_template('signup.html', error=error,
                                    first=first, last=last, email=email, phone=phone)
 
-        user = User(
-            first_name=first,
-            last_name=last,
-            email=email,
-            phone=phone,
-            password=password
-        )
+        user = User(first_name=first, last_name=last, email=email, phone=phone, password=password)
         db.session.add(user)
         db.session.commit()
-
         session['user_email'] = email
         return redirect(url_for('index'))
 
@@ -133,7 +131,7 @@ def logout():
     session.pop('admin_name', None)
     return redirect(url_for('index'))
 
-# ------------------- Buy / Payment -------------------
+# ---------- Buy / Payment ----------
 @app.route('/buy', methods=['GET', 'POST'])
 def buy():
     user = logged_in_user()
@@ -165,23 +163,17 @@ def buy():
             data = resp.json()
 
             if data.get("status_code") == "ok" and "ret" in data:
-                payment_url = data["ret"].get("order_id")
-                ticket = Ticket(user_id=user.id, order_id=payment_url, status="pending")
+                # Create ticket record
+                ticket = Ticket(user_id=user.id, order_id=data["ret"].get("order_id"), status="pending")
                 db.session.add(ticket)
                 db.session.commit()
+                payment_url = data["ret"].get("order_id")
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
-            print("API call error:", e)
             error_msg = f"Серверт алдаа гарлаа: {e}"
 
-    return render_template(
-        "buy.html",
-        user=user,
-        amount=amount,
-        payment_url=payment_url,
-        error_msg=error_msg
-    )
+    return render_template("buy.html", user=user, amount=amount, payment_url=payment_url, error_msg=error_msg)
 
 @app.route('/callback', methods=['POST'])
 def callback():
@@ -202,7 +194,7 @@ def ticket_success(ticket_id):
     user = ticket.user
     return render_template('ticket_success.html', ticket=ticket, user=user)
 
-# ------------------- Admin -------------------
+# ---------- Admin ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -233,6 +225,6 @@ def admin_user_detail(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('user_detail.html', user=user)
 
-# ------------------- Run -------------------
+# ---------- Run ----------
 if __name__ == '__main__':
     app.run(debug=True)

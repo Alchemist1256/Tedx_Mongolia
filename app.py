@@ -162,37 +162,29 @@ def buy():
                 ret = data["ret"]
                 order_id = ret.get("order_id")
 
-                # Check for deeplink first (Pass.mn returns this)
-                if "deeplink" in ret:
-                    payment_url = ret["deeplink"]
-                elif "payment_url" in ret:
-                    payment_url = ret["payment_url"]
+                # ⚙️ Pass.mn API-аас бүрэн URL ирдэг бол шууд ашиглана
+                if order_id and (order_id.startswith("http://") or order_id.startswith("https://")):
+                    payment_url = order_id
                 elif order_id:
-                    # Extract just the UUID from order_id if it's a full URL
-                    if order_id.startswith("http://") or order_id.startswith("https://"):
-                        # Extract UUID from URL like http://pass.mn/order/f9076c46-2924-4ab9-b290-8852317359bd
-                        uuid = order_id.split("/")[-1]
-                        payment_url = f"https://ecomstg.pass.mn/order/{uuid}"
-                    else:
-                        # Use staging domain since we're using staging API
-                        payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
+                    # Хэрвээ зөвхөн ID хэлбэртэй бол staging domain ашиглана
+                    payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
                 else:
-                    error_msg = "Order ID буцаагдсангүй"
+                    error_msg = "Order ID буцаагдсангүй."
 
-                # Save ticket to database if we have order_id
-                if order_id and not error_msg:
+                # ✅ Тасалбар DB-д хадгалах
+                if order_id:
                     ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
                     db.session.add(ticket)
                     db.session.commit()
             else:
-                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data.get('message', 'Unknown error')}"
+                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
         except requests.exceptions.Timeout:
-            error_msg = "Хүсэлт хугацаа хэтрэв. Дахин оролдоно уу."
+            error_msg = "⏱️ Хүсэлт хугацаа хэтрэв. Дахин оролдоно уу."
         except requests.exceptions.RequestException as e:
-            error_msg = f"Сүлжээний алдаа: {str(e)}"
+            error_msg = f"🌐 Сүлжээний алдаа: {str(e)}"
         except Exception as e:
-            error_msg = f"Серверт алдаа гарлаа: {str(e)}"
+            error_msg = f"⚠️ Серверт алдаа гарлаа: {str(e)}"
 
     return render_template(
         "buy.html",
@@ -202,6 +194,7 @@ def buy():
         error_msg=error_msg,
         api_response=api_response
     )
+
 
 @app.route('/buy_test', methods=['GET', 'POST'])
 def buy_test():

@@ -137,7 +137,7 @@ def buy():
         return redirect(url_for('login'))
 
     test_token = "3be353ef85434197a76dd0645a170dc6"
-    amount = 20000
+    amount = 200
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
@@ -216,7 +216,7 @@ def buy_test():
         return redirect(url_for('login'))
 
     test_token = "3be353ef85434197a76dd0645a170dc6"
-    amount = 20000
+    amount = 200
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None

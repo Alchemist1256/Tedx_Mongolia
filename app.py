@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request, jsonify
+from flask import Flask, render_template, session, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
@@ -35,7 +35,7 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    order_id = db.Column(db.String(200), nullable=True)  # <--- order_id багана
+    order_id = db.Column(db.String(200), nullable=True)  # order_id багана
     status = db.Column(db.String(50), default="pending")  # pending / paid
 
 # ------------------- Helpers -------------------
@@ -53,11 +53,17 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ------------------- Create tables + ensure order_id -------------------
+# ------------------- Create tables & ensure order_id -------------------
 with app.app_context():
-    # Зөвхөн table үүсгэх
     db.create_all()
 
+    # order_id багана байхгүй бол нэмэх
+    from sqlalchemy import inspect
+    inspector = inspect(db.engine)
+    columns = [c['name'] for c in inspector.get_columns('tickets')]
+    if 'order_id' not in columns:
+        print("Adding 'order_id' column to tickets table")
+        db.engine.execute('ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);')
 
 # ------------------- Routes -------------------
 @app.route('/')
@@ -89,7 +95,13 @@ def signup():
             return render_template('signup.html', error=error,
                                    first=first, last=last, email=email, phone=phone)
 
-        user = User(first_name=first, last_name=last, email=email, phone=phone, password=password)
+        user = User(
+            first_name=first,
+            last_name=last,
+            email=email,
+            phone=phone,
+            password=password
+        )
         db.session.add(user)
         db.session.commit()
 
@@ -135,7 +147,11 @@ def buy():
     error_msg = None
 
     if request.method == 'POST':
-        payload = {"ecommerce_token": test_token, "amount": amount, "callback_url": callback_url}
+        payload = {
+            "ecommerce_token": test_token,
+            "amount": amount,
+            "callback_url": callback_url
+        }
         headers = {"Content-Type": "application/json"}
 
         try:
@@ -149,8 +165,7 @@ def buy():
 
             if data.get("status_code") == "ok" and "ret" in data:
                 payment_url = data["ret"].get("order_id")
-                
-                # Save ticket to DB
+                # Ticket үүсгэх
                 ticket = Ticket(user_id=user.id, order_id=payment_url, status="pending")
                 db.session.add(ticket)
                 db.session.commit()

@@ -327,13 +327,14 @@ def admin_logout():
 def admin_dashboard():
     users = User.query.order_by(User.created_at.desc()).all()
     return render_template('admin.html', admin_name=session.get('admin_name'), users=users)
-
 @app.route('/admin/user/<int:user_id>')
 @admin_required
 def admin_user_detail(user_id):
     user = User.query.get_or_404(user_id)
-    return render_template('user_detail.html', user=user)
+    tickets = Ticket.query.filter_by(user_id=user_id).all()
+    return render_template('user_detail.html', user=user, tickets=tickets)
 
 # ----- Run -----
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

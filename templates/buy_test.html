@@ -3,34 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Төлбөрийн тест - TEDx Khan Uul</title>
+    <title>Тасалбар худалдан авах - TEDx Khan Uul</title>
     <style>
-        body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
-        .container { max-width: 600px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; text-align: center; }
-        .button { padding: 10px 20px; font-size: 16px; border: none; background: #e62b1e; color: white; border-radius: 5px; cursor: pointer; }
-        .error { color: red; margin-top: 10px; }
-        pre { text-align: left; background: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; margin-top: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 500px; 
+            width: 100%;
+            padding: 40px; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h2 { 
+            color: #333; 
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .price-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .price {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e62b1e;
+            margin: 10px 0;
+        }
+        .currency {
+            font-size: 20px;
+            color: #666;
+        }
+        form {
+            margin-top: 20px;
+        }
+        .button { 
+            width: 100%;
+            padding: 15px 20px; 
+            font-size: 18px; 
+            font-weight: bold;
+            border: none; 
+            background: #e62b1e; 
+            color: white; 
+            border-radius: 10px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: #c41e14;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(230, 43, 30, 0.3);
+        }
+        .button:active {
+            transform: translateY(0);
+        }
+        .error { 
+            color: #e62b1e; 
+            margin-top: 15px;
+            padding: 10px;
+            background: #fee;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .success h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        .payment-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .payment-link:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Төлбөрийн тест</h2>
+        <h2>🎟️ Тасалбар худалдан авах</h2>
+        <p class="subtitle">TEDx Khan Uul 2024</p>
+        
+        <div class="price-box">
+            <div>Тасалбарын үнэ</div>
+            <div class="price">{{ amount | default(20000) | format_number }} <span class="currency">₮</span></div>
+        </div>
+
+        {% if not payment_url %}
         <form method="POST">
-            <button type="submit" class="button">Төлбөр холбоос үүсгэх</button>
+            <button type="submit" class="button">💳 Төлбөр төлөх</button>
         </form>
+        {% endif %}
 
         {% if error_msg %}
-            <div class="error">{{ error_msg }}</div>
+            <div class="error">❌ {{ error_msg }}</div>
         {% endif %}
 
         {% if payment_url %}
-            <p>Төлбөр холбоос: <a href="{{ payment_url }}" target="_blank">{{ payment_url }}</a></p>
+            <div class="success">
+                <h3>✅ Төлбөрийн холбоос бэлэн боллоо!</h3>
+                <p style="margin-bottom: 15px;">Доорх холбоос дээр дарж төлбөрөө төлнө үү:</p>
+                <a href="{{ payment_url }}" target="_blank" class="payment-link">Төлбөр төлөх →</a>
+            </div>
         {% endif %}
 
-        {% if api_response %}
-            <h3>API Response (Debug)</h3>
-            <pre>{{ api_response | tojson(indent=2) }}</pre>
-        {% endif %}
+        <a href="{{ url_for('index') }}" class="back-link">← Нүүр хуудас руу буцах</a>
     </div>
 </body>
 </html>

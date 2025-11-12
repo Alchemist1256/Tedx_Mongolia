@@ -191,14 +191,14 @@ def callback():
 def ticket_success(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
     return render_template('ticket_success.html', ticket=ticket, user=ticket.user)
-    @app.route('/buy_test', methods=['GET', 'POST'])
+@app.route('/buy_test', methods=['GET', 'POST'])
 def buy_test():
     user = logged_in_user()
     if not user:
         return redirect(url_for('login'))
 
     test_token = "3be353ef85434197a76dd0645a170dc6"
-    amount = 20000  # integer хэлбэртэй
+    amount = 20000
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
@@ -221,7 +221,7 @@ def buy_test():
                 timeout=10
             )
             data = resp.json()
-            api_response = data  # HTML-д debug хийхэд хэрэгтэй
+            api_response = data
 
             if data.get("status_code") == "ok" and "ret" in data:
                 order_id = data["ret"].get("order_id")

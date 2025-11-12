@@ -7,12 +7,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; }
-        .btn { display: block; width: 100%; padding: 12px; background: #007bff; color: white; text-align: center; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; text-decoration: none; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; }
+        h2 { margin-bottom: 20px; }
+        .btn { display: inline-block; padding: 12px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px; font-size: 16px; }
         .btn:hover { background: #0056b3; }
-        .error { color: red; text-align: center; margin-bottom: 15px; }
-        .info { text-align: center; margin-bottom: 15px; font-size: 18px; }
+        .error { color: red; margin-bottom: 15px; }
+        .info { margin-bottom: 15px; font-size: 18px; }
+        img.qr { width: 250px; height: 250px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -28,17 +29,16 @@
         </div>
 
         {% if payment_url %}
-            <a href="{{ payment_url }}" class="btn" target="_blank">Төлбөр хийх</a>
-            <p style="text-align:center; margin-top:10px;">Төлбөр хийсний дараа автоматаар баталгаажих болно.</p>
+            <p>Банкны апп-аар QR кодыг скан хийж төлбөр хийх:</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ payment_url }}" alt="QR код" class="qr">
+            <p>Эсвэл <a href="{{ payment_url }}" class="btn" target="_blank">Төлбөр хийх</a></p>
         {% else %}
             <form method="POST">
                 <button type="submit" class="btn">Тасалбар худалдан авах</button>
             </form>
         {% endif %}
 
-        <p style="text-align:center; margin-top:15px;">
-            <a href="{{ url_for('index') }}">Буцах</a>
-        </p>
+        <p style="margin-top: 20px;"><a href="{{ url_for('index') }}">Буцах</a></p>
     </div>
 </body>
 </html>

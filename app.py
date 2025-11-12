@@ -147,37 +147,46 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
-            resp = requests.post("https://ecom.pass.mn/openapi/v1/ecom/create_order",
-                                 json=payload, headers=headers, timeout=10)
+            resp = requests.post(
+                "https://ecom.pass.mn/openapi/v1/ecom/create_order",
+                json=payload,
+                headers=headers,
+                timeout=10
+            )
             data = resp.json()
-            print("API response:", data)
+            print("API response:", data)  # Debug
 
             if data and "ret" in data and data["ret"]:
                 order_id = data["ret"].get("order_id")
                 payment_url = data["ret"].get("payment_url")
+                if not payment_url:
+                    error_msg = "Төлбөрийн холбоос бэлэн биш байна."
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
             print("Error calling API:", e)
             error_msg = "Серверт алдаа гарлаа."
 
-        # API амжилтгүй бол тест URL ашиглах
+        # API амжилтгүй бол тест линк ашиглах
         if not payment_url:
-            order_id = "test_order_123"
+            order_id = f"test_order_{user.id}"
             payment_url = f"https://example.com/pay/{order_id}"
+            # Тест линк байгаа тул алдааг харуулах шаардлагагүй
             error_msg = None
 
-        # Ticket DB-д хадгалах
+        # Ticket-ийг DB-д хадгалах
         if order_id:
             ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
             db.session.add(ticket)
             db.session.commit()
 
-    return render_template("buy.html",
-                           user=user,
-                           amount=amount,
-                           payment_url=payment_url,
-                           error_msg=error_msg)
+    return render_template(
+        "buy.html",
+        user=user,
+        amount=amount,
+        payment_url=payment_url,
+        error_msg=error_msg
+    )
 
 
 @app.route('/callback', methods=['POST'])

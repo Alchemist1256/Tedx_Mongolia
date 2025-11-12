@@ -2,24 +2,90 @@
 <html lang="mn">
 <head>
     <meta charset="UTF-8">
-    <title>Тасалбар худалдаа</title>
+    <title>Төлбөр - TEDx Khan Uul</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 { color: #333; text-align: center; }
+        .button { 
+            width: 100%;
+            padding: 15px; 
+            font-size: 18px; 
+            border: none; 
+            background: #e62b1e; 
+            color: white; 
+            border-radius: 5px; 
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .button:hover { background: #c41e14; }
+        .error { 
+            color: red; 
+            padding: 10px; 
+            background: #ffe6e6; 
+            border-radius: 5px; 
+            margin-top: 10px; 
+        }
+        .success { 
+            padding: 20px; 
+            background: #e8f5e9; 
+            border-radius: 5px; 
+            margin-top: 20px; 
+            text-align: center;
+        }
+        .link { 
+            display: inline-block;
+            padding: 12px 30px;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .price { 
+            text-align: center; 
+            font-size: 32px; 
+            color: #e62b1e; 
+            font-weight: bold; 
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Тасалбар худалдаа</h1>
-    <p>Төлбөрийн хэмжээ: {{ amount }}₮</p>
+    <div class="container">
+        <h2>Тасалбар худалдан авах</h2>
+        
+        <div class="price">{{ amount }}₮</div>
 
-    {% if error_msg %}
-        <p style="color: red;">{{ error_msg }}</p>
-    {% endif %}
-
-    {% if payment_url %}
-        <p>Төлбөр хийх холбоос:</p>
-        <a href="{{ payment_url }}" target="_blank">Төлбөр төлөх</a>
-        <p>Төлбөр төлөгдсөний дараа тасалбар гарч ирнэ.</p>
-    {% else %}
-        <form method="POST">
-            <button type="submit">Тасалбар худалдан авах</button>
+        <form method="POST" action="/buy">
+            <button type="submit" class="button">Төлбөр төлөх</button>
         </form>
-    {% endif %}
+
+        {% if error_msg %}
+            <div class="error">{{ error_msg }}</div>
+        {% endif %}
+
+        {% if payment_url %}
+            <div class="success">
+                <p><strong>Төлбөрийн холбоос бэлэн боллоо!</strong></p>
+                <a href="{{ payment_url }}" target="_blank" class="link">Төлбөр төлөх →</a>
+            </div>
+        {% endif %}
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="/">← Буцах</a>
+        </p>
+    </div>
 </body>
 </html>

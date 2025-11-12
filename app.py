@@ -137,7 +137,7 @@ def buy():
     payment_url = None
     order_id = None
     error_msg = None
-    api_response = None  # 💡 Debug: response-г HTML-д харуулах
+    api_response = None  # debug-д харуулах хувьсагч
 
     if request.method == 'POST':
         payload = {
@@ -148,14 +148,17 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
+            # STG API-д хүсэлт илгээх
             resp = requests.post(
                 "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
-                json=payload, headers=headers, timeout=10
+                json=payload,
+                headers=headers,
+                timeout=10
             )
             data = resp.json()
-            api_response = data  # 💡 Debug: HTML-д харуулах
-            print("API response:", data)
+            api_response = data  # debug template руу дамжуулах
 
+            # API response шалгах
             if data.get("status_code") == "ok" and "ret" in data:
                 order_id = data["ret"].get("order_id")  # Энэ нь төлбөрийн холбоос
                 payment_url = order_id
@@ -165,6 +168,7 @@ def buy():
             print("Error calling API:", e)
             error_msg = "Серверт алдаа гарлаа."
 
+        # Ticket DB-д хадгалах
         if order_id:
             ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
             db.session.add(ticket)
@@ -176,8 +180,9 @@ def buy():
         amount=amount,
         payment_url=payment_url,
         error_msg=error_msg,
-        api_response=api_response  # 💡 Debug: template-д дамжуулах
+        api_response=api_response  # debug харуулах
     )
+
 
 
 @app.route('/callback', methods=['POST'])

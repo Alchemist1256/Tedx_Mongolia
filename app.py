@@ -135,9 +135,7 @@ def buy():
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
-    order_id = None
     error_msg = None
-    api_response = None  # debug-д харуулах хувьсагч
 
     if request.method == 'POST':
         payload = {
@@ -148,7 +146,6 @@ def buy():
         headers = {"Content-Type": "application/json"}
 
         try:
-            # STG API-д хүсэлт илгээх
             resp = requests.post(
                 "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
                 json=payload,
@@ -156,35 +153,23 @@ def buy():
                 timeout=10
             )
             data = resp.json()
-            api_response = data  # debug template руу дамжуулах
 
-            # API response шалгах
             if data.get("status_code") == "ok" and "ret" in data:
-                order_id = data["ret"].get("order_id")  # Энэ нь төлбөрийн холбоос
-                payment_url = order_id
+                payment_url = data["ret"].get("order_id")  # Төлбөрийн холбоос
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
-            print("Error calling API:", e)
+            print("API call error:", e)
             error_msg = "Серверт алдаа гарлаа."
-
-        # Ticket DB-д хадгалах
-        if order_id:
-            ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
-            db.session.add(ticket)
-            db.session.commit()
 
     return render_template(
         "buy.html",
         user=user,
         amount=amount,
         payment_url=payment_url,
-        error_msg=error_msg,
-        api_response=api_response  # debug харуулах
+        error_msg=error_msg
     )
-
-
-
+    
 @app.route('/callback', methods=['POST'])
 def callback():
     data = request.json

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Төлбөрийн тест - TEDx Khan Uul</title>
+    <style>
+        body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
+        .container { max-width: 600px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; text-align: center; }
+        .button { padding: 10px 20px; font-size: 16px; border: none; background: #e62b1e; color: white; border-radius: 5px; cursor: pointer; }
+        .error { color: red; margin-top: 10px; }
+        pre { text-align: left; background: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Төлбөрийн тест</h2>
+        <form method="POST">
+            <button type="submit" class="button">Төлбөр холбоос үүсгэх</button>
+        </form>
+
+        {% if error_msg %}
+            <div class="error">{{ error_msg }}</div>
+        {% endif %}
+
+        {% if payment_url %}
+            <p>Төлбөр холбоос: <a href="{{ payment_url }}" target="_blank">{{ payment_url }}</a></p>
+        {% endif %}
+
+        {% if api_response %}
+            <h3>API Response (Debug)</h3>
+            <pre>{{ api_response | tojson(indent=2) }}</pre>
+        {% endif %}
+    </div>
+</body>
+</html>

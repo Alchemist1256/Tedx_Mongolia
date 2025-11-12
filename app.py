@@ -158,12 +158,13 @@ def buy():
             data = resp.json()
 
             if data.get("status_code") == "ok" and "ret" in data:
-                # Төлбөр хийх холбоосыг зөв гаргаж байна
+                # Payment URL-г зөвхөн хэрэглэгчдэд харуулах
                 order_id = data["ret"].get("order_id")
                 payment_url = f"https://pass.mn/order/{order_id}"
                 # Тасалбарыг зөвхөн callback-д үүсгэнэ
             else:
-                error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
+                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
+
         except Exception as e:
             error_msg = f"Серверт алдаа гарлаа: {e}"
 
@@ -175,16 +176,22 @@ def buy():
         error_msg=error_msg
     )
 
-
+# ---------- Callback route ----------
 @app.route('/callback', methods=['POST'])
 def callback():
     data = request.json
     order_id = data.get('order_id')
     status = data.get('status')
-    ticket = Ticket.query.filter_by(order_id=order_id).first()
-    if ticket and status == "paid":
-        ticket.status = "paid"
-        db.session.commit()
+
+    # Төлбөр амжилттай бол Ticket үүсгэх
+    if status == "paid":
+        user_email = data.get('user_email')  # API-аас илгээж байвал
+        user = User.query.filter_by(email=user_email).first()
+        if user:
+            ticket = Ticket(user_id=user.id, order_id=order_id, status="paid")
+            db.session.add(ticket)
+            db.session.commit()
+
     return "", 200
 
 @app.route('/ticket/<int:ticket_id>')

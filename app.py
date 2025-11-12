@@ -55,11 +55,9 @@ def admin_required(f):
 
 # ------------------- Create tables + ensure order_id -------------------
 with app.app_context():
-    try:
-        db.engine.execute("ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);")
-    except Exception as e:
-        print("Order_id column already exists or error:", e)
+    # Зөвхөн table үүсгэх
     db.create_all()
+
 
 # ------------------- Routes -------------------
 @app.route('/')

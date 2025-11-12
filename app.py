@@ -159,12 +159,13 @@ def buy():
 
             if data.get("status_code") == "ok" and data.get("ret"):
                 order_id = data["ret"].get("order_id")
-                # Хэрэв order_id нь аль хэдийн URL байвал шууд ашиглана
-                if order_id.startswith("http"):
+                
+                # Зассан хэсэг: давхар http нэмэгдэхээс сэргийлэх
+                if order_id.startswith("http://") or order_id.startswith("https://"):
                     payment_url = order_id
                 else:
                     payment_url = f"https://pass.mn/order/{order_id}"
-                # Тасалбарыг энд үүсгэхгүй, зөвхөн callback-д үүсгэнэ
+
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
@@ -178,7 +179,6 @@ def buy():
         payment_url=payment_url,
         error_msg=error_msg
     )
-
 
 
 # ---------- Callback route ----------

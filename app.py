@@ -158,14 +158,12 @@ def buy():
             data = resp.json()
 
             if data.get("status_code") == "ok" and data.get("ret"):
+                # API-с ирсэн order_id-ийг авч зөв форматлах
                 order_id = data["ret"].get("order_id")
-                
-                # Зассан хэсэг: давхар http нэмэгдэхээс сэргийлэх
                 if order_id.startswith("http://") or order_id.startswith("https://"):
                     payment_url = order_id
                 else:
                     payment_url = f"https://pass.mn/order/{order_id}"
-
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
@@ -179,6 +177,7 @@ def buy():
         payment_url=payment_url,
         error_msg=error_msg
     )
+
 
 
 # ---------- Callback route ----------

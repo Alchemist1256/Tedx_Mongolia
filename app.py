@@ -162,24 +162,19 @@ def buy():
                 ret = data["ret"]
                 order_id = ret.get("order_id")
 
-                # IMPORTANT: Use the exact URL from the API response
-                # Pass.mn should return the correct payment URL
-                if "deeplink" in ret:
-                    payment_url = ret["deeplink"]
-                elif "payment_url" in ret:
-                    payment_url = ret["payment_url"]
-                elif "url" in ret:
-                    payment_url = ret["url"]
-                else:
-                    # If no URL in response, construct it carefully
-                    # For staging environment, might need different domain
-                    error_msg = f"Payment URL not found in response. API returned: {ret.keys()}"
-
-                # Save ticket to database if we have order_id
-                if order_id and payment_url:
-                    ticket = Ticket(user_id=user.id, order_id=order_id, status="pending")
+                # Pass.mn returns order_id as a full URL - use it directly!
+                if order_id:
+                    payment_url = order_id  # This is already the complete payment URL
+                    
+                    # For database storage, extract just the UUID
+                    order_uuid = order_id.split("/")[-1] if "/" in order_id else order_id
+                    
+                    # Save ticket to database
+                    ticket = Ticket(user_id=user.id, order_id=order_uuid, status="pending")
                     db.session.add(ticket)
                     db.session.commit()
+                else:
+                    error_msg = "Order ID буцаагдсангүй"
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data.get('message', 'Unknown error')}"
 

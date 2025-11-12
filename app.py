@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request
+from flask import Flask, render_template, session, redirect, url_for, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
@@ -7,7 +7,7 @@ import requests
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
-# Database
+# Render PostgreSQL database
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
@@ -35,15 +35,15 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    order_id = db.Column(db.String(200), nullable=True)
+    order_id = db.Column(db.String(200), nullable=True)  # <--- order_id багана
     status = db.Column(db.String(50), default="pending")  # pending / paid
 
 # ------------------- Helpers -------------------
 def logged_in_user():
-    email = session.get('user_email')
-    if not email:
+    user_email = session.get('user_email')
+    if not user_email:
         return None
-    return User.query.filter_by(email=email).first()
+    return User.query.filter_by(email=user_email).first()
 
 def admin_required(f):
     @wraps(f)
@@ -53,7 +53,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# ------------------- Create tables + ensure order_id -------------------
 with app.app_context():
+    try:
+        db.engine.execute("ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);")
+    except Exception as e:
+        print("Order_id column already exists or error:", e)
     db.create_all()
 
 # ------------------- Routes -------------------
@@ -89,6 +94,7 @@ def signup():
         user = User(first_name=first, last_name=last, email=email, phone=phone, password=password)
         db.session.add(user)
         db.session.commit()
+
         session['user_email'] = email
         return redirect(url_for('index'))
 
@@ -99,11 +105,14 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
+
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
-            session['user_email'] = email
+            session['user_email'] = user.email
             return redirect(url_for('index'))
+
         return render_template('login.html', error="Gmail or password is wrong", email=email)
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -120,7 +129,7 @@ def buy():
     if not user:
         return redirect(url_for('login'))
 
-    test_token = "3be353ef85434197a76dd0645a170dc6"  # Test token
+    test_token = "3be353ef85434197a76dd0645a170dc6"
     amount = "20000"
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
@@ -128,11 +137,7 @@ def buy():
     error_msg = None
 
     if request.method == 'POST':
-        payload = {
-            "ecommerce_token": test_token,
-            "amount": amount,
-            "callback_url": callback_url
-        }
+        payload = {"ecommerce_token": test_token, "amount": amount, "callback_url": callback_url}
         headers = {"Content-Type": "application/json"}
 
         try:
@@ -147,20 +152,23 @@ def buy():
             if data.get("status_code") == "ok" and "ret" in data:
                 payment_url = data["ret"].get("order_id")
                 
-                # Ticket үүсгэх
+                # Save ticket to DB
                 ticket = Ticket(user_id=user.id, order_id=payment_url, status="pending")
                 db.session.add(ticket)
                 db.session.commit()
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
         except Exception as e:
+            print("API call error:", e)
             error_msg = f"Серверт алдаа гарлаа: {e}"
 
-    return render_template("buy.html",
-                           user=user,
-                           amount=amount,
-                           payment_url=payment_url,
-                           error_msg=error_msg)
+    return render_template(
+        "buy.html",
+        user=user,
+        amount=amount,
+        payment_url=payment_url,
+        error_msg=error_msg
+    )
 
 @app.route('/callback', methods=['POST'])
 def callback():
@@ -172,6 +180,7 @@ def callback():
     if ticket and status == "paid":
         ticket.status = "paid"
         db.session.commit()
+
     return "", 200
 
 @app.route('/ticket/<int:ticket_id>')

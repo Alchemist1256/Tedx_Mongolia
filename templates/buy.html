@@ -11,7 +11,6 @@
         .buy-button { background: #e62b1e; color: white; padding: 15px 25px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 20px; }
         .buy-button:disabled { background: gray; cursor: not-allowed; }
         .error-msg { color: red; margin-top: 15px; }
-        pre { text-align: left; background: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }
     </style>
 </head>
 <body>
@@ -26,12 +25,9 @@
         {% if payment_url %}
             <a href="{{ payment_url }}" class="buy-button">Тасалбар худалдан авах</a>
         {% else %}
-            <button class="buy-button" disabled>Төлбөрийн холбоос бэлэн биш байна</button>
-        {% endif %}
-
-        {% if api_response %}
-            <h3>API Response (Debug):</h3>
-            <pre>{{ api_response | tojson(indent=2) }}</pre>
+            <form method="post">
+                <button class="buy-button" type="submit">Төлбөр холбоос үүсгэх</button>
+            </form>
         {% endif %}
     </div>
 </body>

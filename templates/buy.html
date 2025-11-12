@@ -1,112 +1,44 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тасалбар худалдаа</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        .btn { display: block; width: 100%; padding: 12px; background: #007bff; color: white; text-align: center; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; text-decoration: none; }
+        .btn:hover { background: #0056b3; }
+        .error { color: red; text-align: center; margin-bottom: 15px; }
+        .info { text-align: center; margin-bottom: 15px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Тасалбар худалдаа</h2>
 
-{% block content %}
-<div class="container" style="max-width: 500px; margin: 50px auto; font-family: 'Segoe UI', Tahoma, sans-serif;">
+        {% if error_msg %}
+            <div class="error">{{ error_msg }}</div>
+        {% endif %}
 
-    <!-- Card-style container -->
-    <div style="background:#ffffff; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); text-align:center;">
-        <h2 style="margin-bottom:10px; font-size:28px; color:#242834;">Тасалбар худалдан авах</h2>
-        <p style="font-size:18px; color:#555;">Тасалбарын үнэ: <strong>20,000₮</strong></p>
-
-        <!-- Payment Button -->
-        <button id="btn-start" class="btn" style="
-            margin-top:20px;
-            background:#242834;
-            color:white;
-            padding:12px 25px;
-            font-size:16px;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            transition:0.3s;
-        " 
-        onmouseover="this.style.background='#3a3f5c'"
-        onmouseout="this.style.background='#242834'">
-            Төлбөр эхлүүлэх
-        </button>
-
-        <!-- Payment Widget Container -->
-        <div id="pass-payment" style="display:none; margin-top:30px; text-align:center;">
-
-            <div id="pass-payment-top-info" style="margin-bottom:20px;">
-                <div id="pass-payment-top-info-merchant-name" style="font-weight:bold; font-size:18px; color:#242834;"></div>
-                <div id="pass-payment-top-info-amount-value" style="font-size:18px; color:#242834;"></div>
-                <div id="pass-payment-top-timer" style="margin-top:10px; position:relative; display:inline-block;">
-                    <svg height="50" width="50">
-                        <circle id="pass-payment-top-timer-circle" cx="25" cy="25" r="20" stroke="#ccc" stroke-width="4" fill="none"></circle>
-                    </svg>
-                    <div id="pass-payment-top-timer-number" style="
-                        position:absolute;
-                        top:50%;
-                        left:50%;
-                        transform:translate(-50%, -50%);
-                        font-weight:bold;
-                        color:#242834;
-                    "></div>
-                </div>
-            </div>
-
-            <div id="pass-payment-help-text" style="margin:15px; font-size:16px; color:#555;"></div>
-
-            <div id="pass-payment-qr" style="display:none; margin:20px auto;">
-                <canvas id="pass-payment-qr-code" style="border-radius:12px;"></canvas>
-            </div>
-
-            <div id="pass-payment-control" style="display:none; margin-top:10px;">
-                <input id="pass-payment-phone-input" placeholder="Утасны дугаар" type="text" style="
-                    padding:10px;
-                    width:70%;
-                    border-radius:8px;
-                    border:1px solid #ccc;
-                    margin-bottom:10px;
-                "/>
-                <div style="margin-top:10px;">
-                    <button onclick="notify_phone()" style="
-                        background:#4CAF50; 
-                        color:white; 
-                        padding:10px 18px; 
-                        border:none; 
-                        border-radius:8px; 
-                        margin-right:10px;
-                        cursor:pointer;
-                        transition:0.3s;
-                    " 
-                    onmouseover="this.style.background='#45a049'" 
-                    onmouseout="this.style.background='#4CAF50'">Мэдэгдэх</button>
-
-                    <button onclick="cancel_order()" style="
-                        background:#f44336; 
-                        color:white; 
-                        padding:10px 18px; 
-                        border:none; 
-                        border-radius:8px;
-                        cursor:pointer;
-                        transition:0.3s;
-                    "
-                    onmouseover="this.style.background='#d7352a'" 
-                    onmouseout="this.style.background='#f44336'">Цуцлах</button>
-                </div>
-            </div>
-
+        <div class="info">
+            Төлбөрийн хэмжээ: {{ amount }}₮
         </div>
+
+        {% if payment_url %}
+            <a href="{{ payment_url }}" class="btn" target="_blank">Төлбөр хийх</a>
+            <p style="text-align:center; margin-top:10px;">Төлбөр хийсний дараа автоматаар баталгаажих болно.</p>
+        {% else %}
+            <form method="POST">
+                <button type="submit" class="btn">Тасалбар худалдан авах</button>
+            </form>
+        {% endif %}
+
+        <p style="text-align:center; margin-top:15px;">
+            <a href="{{ url_for('index') }}">Буцах</a>
+        </p>
     </div>
-</div>
-
-<!-- Include jQuery and QRious -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-
-<!-- Bank JS -->
-<script src="{{ url_for('static', filename='js/pass.js') }}"></script>
-
-<script>
-document.getElementById("btn-start").addEventListener("click", function() {
-    init_widget(
-        "TEDx Payment",   // Merchant name
-        "20000",          // Amount
-        "TEDX_ORDER_{{ user.id }}_{{ user.email|replace('@','_') }}", // Unique order ID
-        120               // TTL in seconds
-    );
-});
-</script>
-{% endblock %}
+</body>
+</html>

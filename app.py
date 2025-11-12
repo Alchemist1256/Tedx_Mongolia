@@ -191,6 +191,57 @@ def callback():
 def ticket_success(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
     return render_template('ticket_success.html', ticket=ticket, user=ticket.user)
+    @app.route('/buy_test', methods=['GET', 'POST'])
+def buy_test():
+    user = logged_in_user()
+    if not user:
+        return redirect(url_for('login'))
+
+    test_token = "3be353ef85434197a76dd0645a170dc6"
+    amount = 20000  # integer хэлбэртэй
+    callback_url = "https://tedx-mongolia.onrender.com/callback"
+
+    payment_url = None
+    error_msg = None
+    api_response = None
+
+    if request.method == 'POST':
+        payload = {
+            "ecommerce_token": test_token,
+            "amount": amount,
+            "callback_url": callback_url
+        }
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            resp = requests.post(
+                "https://ecomstg.pass.mn/openapi/v1/ecom/create_order",
+                json=payload,
+                headers=headers,
+                timeout=10
+            )
+            data = resp.json()
+            api_response = data  # HTML-д debug хийхэд хэрэгтэй
+
+            if data.get("status_code") == "ok" and "ret" in data:
+                order_id = data["ret"].get("order_id")
+                payment_url = f"https://pass.mn/order/{order_id}"
+                error_msg = None
+            else:
+                error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
+
+        except Exception as e:
+            error_msg = f"Серверт алдаа гарлаа: {e}"
+
+    return render_template(
+        "buy_test.html",
+        user=user,
+        amount=amount,
+        payment_url=payment_url,
+        error_msg=error_msg,
+        api_response=api_response
+    )
+
 
 # ----- Admin -----
 @app.route('/admin/login', methods=['GET', 'POST'])

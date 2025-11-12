@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
 import requests
+from sqlalchemy import text, inspect
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
@@ -35,7 +36,7 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    order_id = db.Column(db.String(200), nullable=True)  # order_id багана
+    order_id = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(50), default="pending")  # pending / paid
 
 # ------------------- Helpers -------------------
@@ -57,13 +58,13 @@ def admin_required(f):
 with app.app_context():
     db.create_all()
 
-    # order_id багана байхгүй бол нэмэх
-    from sqlalchemy import inspect
     inspector = inspect(db.engine)
     columns = [c['name'] for c in inspector.get_columns('tickets')]
     if 'order_id' not in columns:
         print("Adding 'order_id' column to tickets table")
-        db.engine.execute('ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);')
+        with db.engine.connect() as conn:
+            conn.execute(text('ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);'))
+            conn.commit()
 
 # ------------------- Routes -------------------
 @app.route('/')
@@ -165,7 +166,6 @@ def buy():
 
             if data.get("status_code") == "ok" and "ret" in data:
                 payment_url = data["ret"].get("order_id")
-                # Ticket үүсгэх
                 ticket = Ticket(user_id=user.id, order_id=payment_url, status="pending")
                 db.session.add(ticket)
                 db.session.commit()

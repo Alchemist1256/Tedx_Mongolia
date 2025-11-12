@@ -203,14 +203,15 @@ def ticket_success(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
     user = ticket.user
     return render_template('ticket_success.html', ticket=ticket, user=user)
-    @app.route('/buy_test', methods=['GET', 'POST'])
+# ------------------- Buy Test (Debug) -------------------
+@app.route('/buy_test', methods=['GET', 'POST'])
 def buy_test():
     payment_url = None
     api_response = None
     error_msg = None
 
     if request.method == 'POST':
-        test_token = "3be353ef85434197a76dd0645a170dc6"  # STG token
+        test_token = "3be353ef85434197a76dd0645a170dc6"
         amount = "20000"
         callback_url = "https://tedx-mongolia.onrender.com/callback"
 
@@ -232,17 +233,19 @@ def buy_test():
             api_response = data
 
             if data.get("status_code") == "ok" and "ret" in data:
-                payment_url = data["ret"].get("order_id")  # API-с ирсэн төлбөр холбоос
+                payment_url = data["ret"].get("order_id")
             else:
                 error_msg = "Төлбөр үүсгэхэд алдаа гарлаа."
 
         except Exception as e:
             error_msg = f"Серверт алдаа гарлаа: {e}"
 
-    return render_template("buy_test.html",
-                           payment_url=payment_url,
-                           api_response=api_response,
-                           error_msg=error_msg)
+    return render_template(
+        "buy_test.html",
+        payment_url=payment_url,
+        api_response=api_response,
+        error_msg=error_msg
+    )
 
 
 # ------------------- Admin -------------------

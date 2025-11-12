@@ -1,30 +1,14 @@
-{% extends "base.html" %}
-{% block content %}
-<div style="max-width:500px; margin:50px auto; font-family:'Segoe UI', Tahoma, sans-serif;">
-    <div style="background:#ffffff; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); text-align:center;">
-        <h2 style="color:#242834;">Баяр хүргэе!</h2>
-        <p style="font-size:16px; color:#555;">Таны төлбөр амжилттай хийгдлээ.</p>
-
-        <div style="background:#f5f5f5; padding:20px; border-radius:12px; margin-top:20px;">
-            <h3 style="margin-bottom:10px; color:#242834;">Тасалбар</h3>
-            <p><strong>Тасалбарын дугаар:</strong> {{ ticket.id }}</p>
-            <p><strong>Төлбөр хийсэн Gmail:</strong> {{ user.email }}</p>
-            <p><strong>Хэрэглэгчийн нэр:</strong> {{ user.first_name }} {{ user.last_name }}</p>
-            <p><strong>Үнийн дүн:</strong> 20,000₮</p>
-        </div>
-
-        <p style="margin-top:20px; font-size:14px; color:#777;">Тасалбараа хадгалах эсвэл хэвлэх боломжтой.</p>
-
-        <a href="{{ url_for('index') }}" style="
-            display:inline-block;
-            margin-top:20px;
-            background:#242834;
-            color:white;
-            padding:12px 25px;
-            border-radius:8px;
-            text-decoration:none;
-            transition:0.3s;
-        " onmouseover="this.style.background='#3a3f5c'" onmouseout="this.style.background='#242834'">Буцах</a>
-    </div>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <title>Тасалбар амжилттай</title>
+</head>
+<body>
+    <h1>Тасалбар амжилттай авлаа!</h1>
+    <p>Хэрэглэгч: {{ user.first_name }} {{ user.last_name }}</p>
+    <p>Тасалбар ID: {{ ticket.id }}</p>
+    <p>Захиалгын дугаар: {{ ticket.order_id }}</p>
+    <p>Төлбөрийн статус: {{ ticket.status }}</p>
+</body>
+</html>

@@ -158,10 +158,7 @@ def buy():
             data = resp.json()
 
             if data.get("status_code") == "ok" and "ret" in data:
-                # Payment URL-г зөвхөн хэрэглэгчдэд харуулах
-                order_id = data["ret"].get("order_id")
-                payment_url = f"https://pass.mn/order/{order_id}"
-                # Тасалбарыг зөвхөн callback-д үүсгэнэ
+                payment_url = data["ret"].get("url")  # API-аас шууд ирсэн төлбөрийн холбоос
             else:
                 error_msg = f"Төлбөр үүсгэхэд алдаа гарлаа: {data}"
 
@@ -175,6 +172,7 @@ def buy():
         payment_url=payment_url,
         error_msg=error_msg
     )
+
 
 # ---------- Callback route ----------
 @app.route('/callback', methods=['POST'])

@@ -168,8 +168,11 @@ def buy():
                 elif "payment_url" in ret:
                     payment_url = ret["payment_url"]
                 elif order_id:
+                    # Extract just the UUID from order_id if it's a full URL
                     if order_id.startswith("http://") or order_id.startswith("https://"):
-                        payment_url = order_id
+                        # Extract UUID from URL like http://pass.mn/order/f9076c46-2924-4ab9-b290-8852317359bd
+                        uuid = order_id.split("/")[-1]
+                        payment_url = f"https://ecomstg.pass.mn/order/{uuid}"
                     else:
                         # Use staging domain since we're using staging API
                         payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
@@ -242,8 +245,10 @@ def buy_test():
                 elif "payment_url" in ret:
                     payment_url = ret["payment_url"]
                 elif order_id:
+                    # Extract just the UUID from order_id if it's a full URL
                     if order_id.startswith("http://") or order_id.startswith("https://"):
-                        payment_url = order_id
+                        uuid = order_id.split("/")[-1]
+                        payment_url = f"https://ecomstg.pass.mn/order/{uuid}"
                     else:
                         payment_url = f"https://ecomstg.pass.mn/order/{order_id}"
 

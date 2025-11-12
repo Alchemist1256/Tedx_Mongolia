@@ -162,9 +162,9 @@ def buy():
                 ret = data["ret"]
                 order_id = ret.get("order_id")
 
-                # Pass.mn returns order_id as a full URL - use it directly!
+                # Pass.mn returns order_id as the full payment URL
                 if order_id:
-                    payment_url = order_id  # This is already the complete payment URL
+                    payment_url = order_id  # Use it directly as the payment URL
                     
                     # For database storage, extract just the UUID
                     order_uuid = order_id.split("/")[-1] if "/" in order_id else order_id
@@ -193,7 +193,6 @@ def buy():
         error_msg=error_msg,
         api_response=api_response
     )
-
 
 @app.route('/buy_test', methods=['GET', 'POST'])
 def buy_test():

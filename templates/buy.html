@@ -65,9 +65,6 @@
             font-size: 24px;
             color: #666;
         }
-        form {
-            margin-top: 20px;
-        }
         .button { 
             width: 100%;
             padding: 16px 20px; 
@@ -129,13 +126,14 @@
             flex: 1;
             padding: 16px 15px;
             color: white;
-            border: none;
+            text-decoration: none;
             border-radius: 8px;
             font-weight: bold;
             font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            text-align: center;
             line-height: 1.3;
+            transition: all 0.3s ease;
+            display: block;
         }
         .payment-btn:hover {
             transform: translateY(-2px);
@@ -146,12 +144,6 @@
         }
         .payment-btn.digipay:hover {
             background: #002a5c;
-        }
-        .payment-btn.passapp {
-            background: #4caf50;
-        }
-        .payment-btn.passapp:hover {
-            background: #45a049;
         }
         .download-section {
             font-size: 11px;
@@ -197,15 +189,6 @@
         .back-link:hover {
             text-decoration: underline;
         }
-        .debug {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 5px;
-            font-size: 12px;
-            font-family: monospace;
-            overflow-x: auto;
-        }
     </style>
 </head>
 <body>
@@ -222,7 +205,7 @@
         <div class="price-box">
             <div class="price-label">Тасалбарын үнэ</div>
             <div class="price">
-                {{ "{:,}".format(amount).replace(',', ' ') if amount else '20,000' }}
+                20,000
                 <span class="currency">₮</span>
             </div>
         </div>
@@ -246,43 +229,30 @@
             
             {% if qr_code_base64 %}
             <div class="qr-container">
-                <img src="data:image/png;base64,{{ qr_code_base64 }}" 
-                     alt="Payment QR Code">
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="Payment QR Code">
                 <p style="font-size: 12px; color: #999; margin-top: 10px;">QR код уншуулах</p>
             </div>
             {% endif %}
             
             <p style="font-size: 14px; color: #666; margin: 15px 0;">
-                <strong>Төлбөр төлөх аппаа сонгоно уу:</strong>
+                <strong>Төлбөр төлөх:</strong>
             </p>
             
             <div class="payment-options">
-                <button onclick="openDigiPay()" class="payment-btn digipay">
-                    🏦 Khan Bank<br>DigiPay
-                </button>
-                
-                <button onclick="openPassMn()" class="payment-btn passapp">
-                    📱 Pass.mn
-                </button>
+                <a href="{{ digipay_deep_link }}" class="payment-btn digipay">
+                    🏦 Khan Bank DigiPay-ээр төлөх
+                </a>
             </div>
             
             <div class="download-section">
                 <div style="font-size: 12px; margin-bottom: 8px; color: #333;">
-                    💡 Апп суулгаагүй бол татаж суулгана уу:
+                    💡 DigiPay апп суулгаагүй бол:
                 </div>
-                <div style="margin: 5px 0;">
-                    🏦 DigiPay: 
+                <div>
                     <a href="https://apps.apple.com/us/app/digi-pay/id6478477781" 
-                       class="download-link" target="_blank">iPhone</a>
+                       class="download-link" target="_blank">🍎 iPhone</a>
                     <a href="https://play.google.com/store/apps/details?id=com.khanbank.wallet" 
-                       class="download-link" target="_blank">Android</a>
-                </div>
-                <div style="margin: 5px 0;">
-                    📱 Pass.mn: 
-                    <a href="https://apps.apple.com/us/app/pass-mn/id1510760757" 
-                       class="download-link" target="_blank">iPhone</a>
-                    <a href="https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile" 
-                       class="download-link" target="_blank">Android</a>
+                       class="download-link" target="_blank">🤖 Android</a>
                 </div>
             </div>
             
@@ -291,110 +261,25 @@
             </div>
             
             <p class="order-id">
-                Order ID: {{ payment_url.split('/')[-1] }}
+                Invoice ID: {{ digipay_deep_link.split('/')[-1] if digipay_deep_link else '' }}
             </p>
         </div>
-        {% endif %}
-
-        {% if api_response %}
-            <div class="debug">
-                <strong>Debug - API Response:</strong><br>
-                {{ api_response | tojson(indent=2) }}
-            </div>
         {% endif %}
 
         <a href="{{ url_for('index') }}" class="back-link">← Нүүр хуудас руу буцах</a>
     </div>
 
-    {% if payment_url and not error_msg %}
+    {% if payment_url %}
     <script>
-        const paymentUrl = "{{ payment_url }}";
-        const orderId = "{{ payment_url.split('/')[-1] }}";
+        const invoiceId = "{{ digipay_deep_link.split('/')[-1] if digipay_deep_link else '' }}";
         
-        function openDigiPay() {
-            // Try multiple possible deep link schemes
-            const deepLinks = [
-                `digipay://payment/${orderId}`,
-                `khanbank://payment/${orderId}`,
-                `com.khanbank.wallet://payment/${orderId}`,
-                paymentUrl  // Fallback to original URL
-            ];
-            
-            tryDeepLinks(deepLinks, 'digipay');
-        }
-        
-        function openPassMn() {
-            // Try multiple possible deep link schemes
-            const deepLinks = [
-                `pass://payment/${orderId}`,
-                `passmn://payment/${orderId}`,
-                `mn.databank.ewalletmobile://payment/${orderId}`,
-                paymentUrl  // Fallback to original URL
-            ];
-            
-            tryDeepLinks(deepLinks, 'passmn');
-        }
-        
-        function tryDeepLinks(links, appType) {
-            let tried = 0;
-            
-            function tryNext() {
-                if (tried >= links.length) {
-                    // All attempts failed, show app store options
-                    showAppStorePrompt(appType);
-                    return;
-                }
-                
-                const link = links[tried];
-                tried++;
-                
-                // Create invisible iframe to test deep link
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = link;
-                document.body.appendChild(iframe);
-                
-                // Wait and try next if this fails
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    tryNext();
-                }, 500);
-            }
-            
-            tryNext();
-        }
-        
-        function showAppStorePrompt(appType) {
-            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-            const isAndroid = /Android/i.test(navigator.userAgent);
-            
-            if (appType === 'digipay') {
-                if (confirm('Khan Bank DigiPay апп нээгдсэнгүй.\n\nАпп татах хуудас руу очих уу?')) {
-                    if (isIOS) {
-                        window.open('https://apps.apple.com/us/app/digi-pay/id6478477781', '_blank');
-                    } else if (isAndroid) {
-                        window.open('https://play.google.com/store/apps/details?id=com.khanbank.wallet', '_blank');
-                    }
-                }
-            } else {
-                if (confirm('Pass.mn апп нээгдсэнгүй.\n\nАпп татах хуудас руу очих уу?')) {
-                    if (isIOS) {
-                        window.open('https://apps.apple.com/us/app/pass-mn/id1510760757', '_blank');
-                    } else if (isAndroid) {
-                        window.open('https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile', '_blank');
-                    }
-                }
-            }
-        }
-
-        // Show status checking message
+        // Auto-check payment status every 5 seconds
         setTimeout(function() {
             document.getElementById('status-check').style.display = 'block';
         }, 2000);
 
-        // Auto-check payment status every 5 seconds
         const checkInterval = setInterval(function() {
-            fetch('/api/check_payment_status/' + orderId)
+            fetch('/api/check_payment_status/' + invoiceId)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'paid') {

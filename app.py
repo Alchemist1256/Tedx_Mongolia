@@ -40,10 +40,9 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     order_id = db.Column(db.String(200), nullable=True)
-    invoice_id = db.Column(db.String(200), nullable=True)  # DigiPay invoice ID
     status = db.Column(db.String(50), default="pending")
     amount = db.Column(db.String(20), nullable=True)
-    payment_request_id = db.Column(db.String(100), nullable=True)  # txnId
+    payment_request_id = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     paid_at = db.Column(db.DateTime, nullable=True)
 
@@ -62,45 +61,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# ---------------- DigiPay Token ----------------
-def get_digipay_client_token():
-    """
-    Get DigiPay client token for creating invoices
-    Section 2.8 of DigiPay documentation
-    """
-    is_production = os.environ.get("PAYMENT_ENV", "staging") == "production"
-    
-    if is_production:
-        token_url = "https://api.khanbank.com/v1/wallet/auth/token"
-        client_id = os.environ.get("DIGIPAY_CLIENT_ID")
-        client_secret = os.environ.get("DIGIPAY_CLIENT_SECRET")
-    else:
-        # Use test credentials
-        token_url = "https://test-api.khanbank.com/v1/wallet/auth/token"
-        client_id = os.environ.get("DIGIPAY_TEST_CLIENT_ID", "test_client")
-        client_secret = os.environ.get("DIGIPAY_TEST_CLIENT_SECRET", "test_secret")
-    
-    try:
-        resp = requests.post(
-            token_url,
-            params={"grant_type": "client_credentials"},
-            auth=(client_id, client_secret),
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            timeout=30
-        )
-        data = resp.json()
-        return data.get("access_token")
-    except Exception as e:
-        print(f"❌ Token error: {e}")
-        return None
-
 # ---------------- DB Setup ----------------
 with app.app_context():
     db.create_all()
     inspector = inspect(db.engine)
     columns = [c['name'] for c in inspector.get_columns('tickets')]
     
-    # Add new columns if they don't exist
     if 'order_id' not in columns:
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE tickets ADD COLUMN order_id VARCHAR(200);'))
@@ -108,10 +74,6 @@ with app.app_context():
     if 'status' not in columns:
         with db.engine.connect() as conn:
             conn.execute(text("ALTER TABLE tickets ADD COLUMN status VARCHAR(50) DEFAULT 'pending';"))
-            conn.commit()
-    if 'invoice_id' not in columns:
-        with db.engine.connect() as conn:
-            conn.execute(text('ALTER TABLE tickets ADD COLUMN invoice_id VARCHAR(200);'))
             conn.commit()
     if 'amount' not in columns:
         with db.engine.connect() as conn:
@@ -183,101 +145,73 @@ def logout():
     session.pop('admin_name', None)
     return redirect(url_for('index'))
 
-# ----- DigiPay Payment -----
+# ----- Payment -----
 @app.route('/buy', methods=['GET', 'POST'])
 def buy():
     user = logged_in_user()
     if not user:
         return redirect(url_for('login'))
 
-    # PAYMENT CONFIGURATION
-    is_production = os.environ.get("PAYMENT_ENV", "staging") == "production"
-    amount = "20000"  # 20,000 MNT
-    
-    # DigiPay configuration
-    if is_production:
-        invoice_url = "https://api.khanbank.com/v3/superapp/save/invoice"
-        merchant_id = os.environ.get("DIGIPAY_MERCHANT_ID", "70209897")
-        terminal_id = os.environ.get("DIGIPAY_TERMINAL_ID", "70209897")
-        merchant_name = "TEDx Khan Uul"
-    else:
-        invoice_url = "https://test-api.khanbank.com/v3/superapp/save/invoice"
-        merchant_id = os.environ.get("DIGIPAY_TEST_MERCHANT_ID", "TEST_MERCHANT")
-        terminal_id = os.environ.get("DIGIPAY_TEST_TERMINAL_ID", "TEST_TERMINAL")
-        merchant_name = "TEDx Khan Uul (Test)"
-    
-    webhook_url = "https://tedx-mongolia.onrender.com/digipay_webhook"
-    redirect_url_after_payment = "https://tedx-mongolia.onrender.com/"
+    # Payment Configuration - PRODUCTION
+    api_url = "https://ecom.pass.mn/openapi/v1/ecom/create_order"
+    ecommerce_token = "0c8e9f21efcc45baa5a49ccb32e84836"  # Your production token
+    amount = "100"  # 100 Tugrik
+    callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
-    digipay_deep_link = None
     error_msg = None
     api_response = None
     qr_code_base64 = None
 
     if request.method == 'POST':
-        # Get DigiPay token
-        access_token = get_digipay_client_token()
-        
-        if not access_token:
-            error_msg = "Токен авахад алдаа гарлаа. Дахин оролдоно уу."
-            return render_template("buy.html", user=user, amount=amount, error_msg=error_msg)
-        
-        # Generate unique external invoice ID
-        ext_invoice_id = f"TEDX-{user.id}-{int(datetime.utcnow().timestamp())}"
-        
-        # Create invoice (Section 2.5)
         payload = {
-            "amount": float(amount),
-            "merchantId": merchant_id,
-            "merchantName": merchant_name,
-            "terminalId": terminal_id,
-            "webHookUrl": webhook_url,
-            "redirectUrl": redirect_url_after_payment,
-            "extInvoiceId": ext_invoice_id
+            "ecommerce_token": ecommerce_token,
+            "amount": amount,
+            "callback_url": callback_url
         }
-        
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}"
-        }
+        headers = {"Content-Type": "application/json"}
 
         try:
-            resp = requests.post(invoice_url, json=payload, headers=headers, timeout=60)
+            resp = requests.post(api_url, json=payload, headers=headers, timeout=60)
             data = resp.json()
             api_response = data
 
-            invoice_id = data.get("invoiceId")
-            
-            if invoice_id:
-                # Create deep link (Section 2.7)
-                digipay_deep_link = f"digipay://payment/{invoice_id}"
-                payment_url = digipay_deep_link
+            if data.get("status_code") == "ok" and "ret" in data:
+                ret = data["ret"]
+                order_id_url = ret.get("order_id")
                 
-                # Generate QR code for the deep link
-                qr = qrcode.QRCode(version=1, box_size=10, border=5)
-                qr.add_data(digipay_deep_link)
-                qr.make(fit=True)
-                img = qr.make_image(fill_color="black", back_color="white")
-                
-                buffered = io.BytesIO()
-                img.save(buffered, format="PNG")
-                qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
-                
-                # Save ticket to database
-                ticket = Ticket(
-                    user_id=user.id,
-                    order_id=ext_invoice_id,
-                    invoice_id=invoice_id,
-                    status="pending",
-                    amount=amount
-                )
-                db.session.add(ticket)
-                db.session.commit()
-                
-                print(f"✅ DigiPay invoice created: {invoice_id}")
+                if order_id_url:
+                    payment_url = order_id_url
+                    
+                    # Generate QR code
+                    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+                    qr.add_data(order_id_url)
+                    qr.make(fit=True)
+                    img = qr.make_image(fill_color="black", back_color="white")
+                    
+                    buffered = io.BytesIO()
+                    img.save(buffered, format="PNG")
+                    qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
+                    
+                    # Save ticket to database
+                    order_uuid = order_id_url.split("/")[-1]
+                    ticket = Ticket(
+                        user_id=user.id,
+                        order_id=order_uuid,
+                        status="pending",
+                        amount=amount
+                    )
+                    db.session.add(ticket)
+                    db.session.commit()
+                    
+                    print(f"✅ Order created: {order_uuid}")
+                else:
+                    error_msg = "Order ID буцаагдсангүй"
             else:
-                error_msg = "Invoice ID буцаагдсангүй"
+                msg = data.get("msg", {})
+                error_code = msg.get("code", "Unknown")
+                error_body = msg.get("body", "Алдаа гарлаа")
+                error_msg = f"Алдаа [{error_code}]: {error_body}"
 
         except requests.exceptions.Timeout:
             error_msg = "Хүсэлт хугацаа хэтрэв (60 секунд). Дахин оролдоно уу."
@@ -291,67 +225,69 @@ def buy():
         user=user,
         amount=amount,
         payment_url=payment_url,
-        digipay_deep_link=digipay_deep_link,
         error_msg=error_msg,
         api_response=api_response,
         qr_code_base64=qr_code_base64
     )
 
-# ---------- DigiPay Webhook ----------
-@app.route('/digipay_webhook', methods=['GET'])
-def digipay_webhook():
-    """
-    DigiPay webhook endpoint (Section 2.6)
-    Receives payment status updates via GET params
-    
-    Params: invoiceId, txnId, status, amount, extInvoiceId
-    """
+# ---------- Callback ----------
+@app.route('/callback', methods=['POST', 'GET'])
+def callback():
     try:
-        invoice_id = request.args.get('invoiceId')
-        txn_id = request.args.get('txnId')
-        status = request.args.get('status')  # PAID or FAIL
-        amount = request.args.get('amount')
-        ext_invoice_id = request.args.get('extInvoiceId')
-        
-        print(f"📩 DigiPay Webhook: invoiceId={invoice_id}, status={status}, txnId={txn_id}")
-        
-        # Find ticket by invoice_id or ext_invoice_id
-        ticket = Ticket.query.filter(
-            (Ticket.invoice_id == invoice_id) | (Ticket.order_id == ext_invoice_id)
-        ).first()
-        
-        if ticket:
-            if status == "PAID":
-                ticket.status = "paid"
-                ticket.paid_at = datetime.utcnow()
-                ticket.payment_request_id = txn_id
-                db.session.commit()
-                print(f"✅ Ticket {ticket.id} marked as PAID")
-            elif status == "FAIL":
-                ticket.status = "failed"
-                db.session.commit()
-                print(f"❌ Payment failed for ticket {ticket.id}")
-            
-            return "OK", 200
+        if request.is_json:
+            data = request.json
         else:
-            print(f"⚠️ Ticket not found: invoiceId={invoice_id}, extInvoiceId={ext_invoice_id}")
-            return "Ticket not found", 404
-            
-    except Exception as e:
-        print(f"❌ Webhook error: {str(e)}")
-        return str(e), 500
+            data = request.form.to_dict()
+        
+        print(f"📩 Callback received: {data}")
+        
+        # Extract order_id and payment status
+        order_id = data.get('order_id')
+        resp_code = data.get('resp_code')
+        resp_msg = data.get('resp_msg')
+        
+        # Extract UUID from URL if needed
+        if order_id and ('http://' in order_id or 'https://' in order_id):
+            order_uuid = order_id.split('/')[-1]
+        else:
+            order_uuid = order_id
 
-# ---------- Check Payment Status API ----------
-@app.route('/api/check_payment_status/<invoice_id>')
-def api_check_payment_status(invoice_id):
-    """
-    Frontend polling endpoint to check if payment is complete
-    """
+        print(f"💳 Order: {order_uuid}, Code: {resp_code}")
+
+        if order_uuid:
+            ticket = Ticket.query.filter_by(order_id=order_uuid).first()
+            
+            if ticket:
+                # resp_code "000" means success
+                if resp_code == "000":
+                    ticket.status = "paid"
+                    ticket.paid_at = datetime.utcnow()
+                    db.session.commit()
+                    print(f"✅ Ticket {ticket.id} marked as PAID")
+                    return jsonify({"success": True, "message": "Payment confirmed"}), 200
+                else:
+                    ticket.status = "failed"
+                    db.session.commit()
+                    print(f"❌ Payment failed: {resp_msg}")
+                    return jsonify({"success": True, "message": "Status updated"}), 200
+            else:
+                print(f"⚠️ Ticket not found: {order_uuid}")
+                return jsonify({"error": "Ticket not found"}), 404
+
+        return jsonify({"success": True}), 200
+        
+    except Exception as e:
+        print(f"❌ Callback error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# ---------- Check Payment Status ----------
+@app.route('/api/check_payment_status/<order_id>')
+def api_check_payment_status(order_id):
     user = logged_in_user()
     if not user:
         return jsonify({"error": "Not logged in"}), 401
     
-    ticket = Ticket.query.filter_by(invoice_id=invoice_id, user_id=user.id).first()
+    ticket = Ticket.query.filter_by(order_id=order_id, user_id=user.id).first()
     
     if not ticket:
         return jsonify({"error": "Ticket not found"}), 404
@@ -359,7 +295,7 @@ def api_check_payment_status(invoice_id):
     return jsonify({
         "status": ticket.status,
         "ticket_id": ticket.id,
-        "invoice_id": ticket.invoice_id
+        "order_id": ticket.order_id
     })
 
 # ---------- Success Page ----------

@@ -313,6 +313,9 @@ def ticket_success(ticket_id):
     return render_template('ticket_success.html', ticket=ticket, user=user)
 
 # ---------- Admin Routes ----------
+# ... (all your existing code above) ...
+
+# ---------- Admin Routes ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -367,6 +370,12 @@ def admin_tickets():
 def admin_user_detail(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('admin_user_detail.html', user=user)
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('is_admin', None)
+    session.pop('admin_name', None)
+    return redirect(url_for('admin_login'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

@@ -167,10 +167,10 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         .payment-link.digipay {
-            background: #667eea;
+            background: #003d82;
         }
         .payment-link.digipay:hover {
-            background: #5568d3;
+            background: #002a5c;
         }
         .payment-link.passapp {
             background: #4caf50;
@@ -294,7 +294,7 @@
             <div class="qr-container">
                 <img src="data:image/png;base64,{{ qr_code_base64 }}" 
                      alt="Payment QR Code">
-                <p style="font-size: 12px; color: #999; margin-top: 10px;">QR кодыг DigiPay эсвэл Pass.mn аппаар уншуулна уу</p>
+                <p style="font-size: 12px; color: #999; margin-top: 10px;">QR кодыг Khan Bank DigiPay эсвэл Pass.mn аппаар уншуулна уу</p>
             </div>
             {% endif %}
             
@@ -305,7 +305,7 @@
             <!-- Payment Options -->
             <div class="payment-options">
                 <a href="{{ payment_url }}" class="payment-link digipay">
-                    💳 DigiPay
+                    🏦 Khan Bank<br>DigiPay
                 </a>
                 
                 <a href="{{ payment_url }}" class="payment-link passapp">
@@ -318,14 +318,14 @@
                 <strong>📥 Апп татаж суулгаагүй бол:</strong>
                 
                 <div class="app-downloads">
-                    <span class="app-name">💳 DigiPay:</span>
-                    <a href="https://apps.apple.com/mn/app/digipay-app/id6446125750" 
+                    <span class="app-name">🏦 Khan Bank DigiPay:</span>
+                    <a href="https://apps.apple.com/us/app/digi-pay/id6478477781" 
                        class="download-link ios" target="_blank">
-                       🍎 iPhone (App Store)
+                       🍎 iPhone
                     </a>
-                    <a href="https://play.google.com/store/apps/details?id=mn.digipay.app" 
+                    <a href="https://play.google.com/store/apps/details?id=com.khanbank.wallet" 
                        class="download-link android" target="_blank">
-                       🤖 Android (Google Play)
+                       🤖 Android
                     </a>
                 </div>
                 
@@ -333,11 +333,11 @@
                     <span class="app-name">📱 Pass.mn:</span>
                     <a href="https://apps.apple.com/us/app/pass-mn/id1510760757" 
                        class="download-link ios" target="_blank">
-                       🍎 iPhone (App Store)
+                       🍎 iPhone
                     </a>
                     <a href="https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile" 
                        class="download-link android" target="_blank">
-                       🤖 Android (Google Play)
+                       🤖 Android
                     </a>
                 </div>
             </div>

@@ -858,7 +858,42 @@ a{
     border: 3px solid #fff; /* optional white border */
     box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* soft shadow for nice effect */
 }
+.header-language-button{
+  font-size: 16px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
+  background: #EB0028;
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+.header-language-button a{
+  color: white;
+  display: block;
+  text-align: center;
+}
 
+@media (max-width: 870px) {
+  .header-language-button{
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+@media (max-width: 640px) {
+  .header-language-button{
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+}
+@media (max-width: 375px) {
+  .header-language-button{
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}
 /* ------------------------------ */
 /* END */
 /* ------------------------------ */
+

@@ -189,18 +189,34 @@
         }
         .download-section strong {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #333;
             font-size: 13px;
         }
+        .app-downloads {
+            margin: 8px 0;
+        }
+        .app-downloads .app-name {
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 4px;
+        }
         .download-link {
             color: #667eea;
-            font-size: 12px;
+            font-size: 11px;
             text-decoration: none;
             font-weight: bold;
+            margin-right: 10px;
         }
         .download-link:hover {
             text-decoration: underline;
+        }
+        .download-link.ios {
+            color: #007aff;
+        }
+        .download-link.android {
+            color: #3ddc84;
         }
         .order-id {
             margin-top: 15px;
@@ -299,21 +315,29 @@
             
             <!-- Download Instructions -->
             <div class="download-section">
-                <strong>📥 Апп татах холбоос:</strong>
+                <strong>📥 Апп татаж суулгаагүй бол:</strong>
                 
-                <div style="margin: 5px 0;">
-                    • DigiPay: 
+                <div class="app-downloads">
+                    <span class="app-name">💳 DigiPay:</span>
+                    <a href="https://apps.apple.com/mn/app/digipay-app/id6446125750" 
+                       class="download-link ios" target="_blank">
+                       🍎 iPhone (App Store)
+                    </a>
                     <a href="https://play.google.com/store/apps/details?id=mn.digipay.app" 
-                       class="download-link" target="_blank">
-                       Google Play
+                       class="download-link android" target="_blank">
+                       🤖 Android (Google Play)
                     </a>
                 </div>
                 
-                <div style="margin: 5px 0;">
-                    • Pass.mn: 
-                    <a href="https://repo.databank.mn/apk/pass-v411.apk" 
-                       class="download-link">
-                       APK татах
+                <div class="app-downloads">
+                    <span class="app-name">📱 Pass.mn:</span>
+                    <a href="https://apps.apple.com/us/app/pass-mn/id1510760757" 
+                       class="download-link ios" target="_blank">
+                       🍎 iPhone (App Store)
+                    </a>
+                    <a href="https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile" 
+                       class="download-link android" target="_blank">
+                       🤖 Android (Google Play)
                     </a>
                 </div>
             </div>

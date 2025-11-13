@@ -155,7 +155,7 @@ def buy():
     # Payment Configuration - PRODUCTION
     api_url = "https://ecom.pass.mn/openapi/v1/ecom/create_order"
     ecommerce_token = "0c8e9f21efcc45baa5a49ccb32e84836"  # Your production token
-    amount = "100"  # 100 Tugrik
+    amount = "20000"  # 100 Tugrik
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None

@@ -114,15 +114,10 @@
             margin-bottom: 15px;
             font-size: 20px;
         }
-        .success p {
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
         .qr-container {
             text-align: center;
             margin: 20px 0;
-            padding: 15px;
+            padding: 20px;
             background: white;
             border-radius: 10px;
         }
@@ -132,18 +127,31 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 5px;
         }
+        .qr-instructions {
+            font-size: 15px;
+            color: #333;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .method-divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #999;
+            font-size: 13px;
+        }
+        .method-divider::before,
+        .method-divider::after {
+            content: "―――";
+            margin: 0 10px;
+            color: #ddd;
+        }
         .instructions {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
             margin: 15px 0;
             text-align: center;
-            line-height: 1.8;
-        }
-        .instructions strong {
-            color: #333;
-            display: block;
-            margin-bottom: 10px;
-            font-size: 15px;
+            line-height: 1.6;
         }
         .payment-options {
             display: flex;
@@ -153,14 +161,16 @@
         .payment-link {
             flex: 1;
             display: inline-block;
-            padding: 16px 20px;
+            padding: 16px 15px;
             color: white;
             text-decoration: none;
             border-radius: 8px;
             font-weight: bold;
             transition: all 0.3s ease;
-            font-size: 15px;
+            font-size: 14px;
             text-align: center;
+            line-height: 1.3;
+            cursor: pointer;
         }
         .payment-link:hover {
             transform: translateY(-2px);
@@ -179,44 +189,26 @@
             background: #45a049;
         }
         .download-section {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
             margin-top: 15px;
-            padding: 15px;
+            padding: 12px;
             background: #f8f9fa;
             border-radius: 8px;
-            text-align: left;
-        }
-        .download-section strong {
-            display: block;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 13px;
+            text-align: center;
         }
         .app-downloads {
-            margin: 8px 0;
-        }
-        .app-downloads .app-name {
-            font-weight: bold;
-            color: #333;
-            display: block;
-            margin-bottom: 4px;
+            margin: 5px 0;
         }
         .download-link {
             color: #667eea;
             font-size: 11px;
             text-decoration: none;
             font-weight: bold;
-            margin-right: 10px;
+            margin: 0 5px;
         }
         .download-link:hover {
             text-decoration: underline;
-        }
-        .download-link.ios {
-            color: #007aff;
-        }
-        .download-link.android {
-            color: #3ddc84;
         }
         .order-id {
             margin-top: 15px;
@@ -251,6 +243,17 @@
             font-size: 12px;
             font-family: monospace;
             overflow-x: auto;
+        }
+        .mobile-only {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .mobile-only {
+                display: block;
+            }
+            .desktop-only {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -290,55 +293,57 @@
         <div class="success">
             <h3>✅ Төлбөрийн холбоос бэлэн!</h3>
             
+            <!-- PRIMARY METHOD: QR Code -->
             {% if qr_code_base64 %}
             <div class="qr-container">
                 <img src="data:image/png;base64,{{ qr_code_base64 }}" 
-                     alt="Payment QR Code">
-                <p style="font-size: 12px; color: #999; margin-top: 10px;">QR кодыг Khan Bank DigiPay эсвэл Pass.mn аппаар уншуулна уу</p>
+                     alt="Payment QR Code"
+                     id="qr-code-image">
+                <p class="qr-instructions">
+                    📱 QR код уншуулаад төлнө үү
+                </p>
             </div>
             {% endif %}
             
+            <div class="method-divider">эсвэл</div>
+            
             <div class="instructions">
-                <strong>📱 Төлбөр төлөх хэрэгслээ сонгоно уу:</strong>
+                <strong>Утсандаа доорх товчийг дарна уу:</strong>
             </div>
             
-            <!-- Payment Options -->
+            <!-- Payment App Buttons -->
             <div class="payment-options">
-                <a href="{{ payment_url }}" class="payment-link digipay">
+                <a href="javascript:void(0)" 
+                   onclick="openPayment('digipay', '{{ payment_url }}')" 
+                   class="payment-link digipay">
                     🏦 Khan Bank<br>DigiPay
                 </a>
                 
-                <a href="{{ payment_url }}" class="payment-link passapp">
+                <a href="javascript:void(0)" 
+                   onclick="openPayment('passmn', '{{ payment_url }}')" 
+                   class="payment-link passapp">
                     📱 Pass.mn
                 </a>
             </div>
             
             <!-- Download Instructions -->
             <div class="download-section">
-                <strong>📥 Апп татаж суулгаагүй бол:</strong>
-                
-                <div class="app-downloads">
-                    <span class="app-name">🏦 Khan Bank DigiPay:</span>
-                    <a href="https://apps.apple.com/us/app/digi-pay/id6478477781" 
-                       class="download-link ios" target="_blank">
-                       🍎 iPhone
-                    </a>
-                    <a href="https://play.google.com/store/apps/details?id=com.khanbank.wallet" 
-                       class="download-link android" target="_blank">
-                       🤖 Android
-                    </a>
+                <div style="font-size: 12px; margin-bottom: 8px; color: #333;">
+                    💡 Апп суулгаагүй бол эхлээд татаж суулгана уу:
                 </div>
-                
                 <div class="app-downloads">
-                    <span class="app-name">📱 Pass.mn:</span>
+                    🏦 DigiPay: 
+                    <a href="https://apps.apple.com/us/app/digi-pay/id6478477781" 
+                       class="download-link" target="_blank">iPhone</a>
+                    <a href="https://play.google.com/store/apps/details?id=com.khanbank.wallet" 
+                       class="download-link" target="_blank">Android</a>
+                </div>
+                <div class="app-downloads">
+                    📱 Pass.mn: 
                     <a href="https://apps.apple.com/us/app/pass-mn/id1510760757" 
-                       class="download-link ios" target="_blank">
-                       🍎 iPhone
-                    </a>
+                       class="download-link" target="_blank">iPhone</a>
                     <a href="https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile" 
-                       class="download-link android" target="_blank">
-                       🤖 Android
-                    </a>
+                       class="download-link" target="_blank">Android</a>
                 </div>
             </div>
             
@@ -364,13 +369,52 @@
 
     {% if payment_url and not error_msg %}
     <script>
+        const paymentUrl = "{{ payment_url }}";
+        const orderId = "{{ payment_url.split('/')[-1] }}";
+
+        function openPayment(appType, url) {
+            // Try to open the payment URL
+            const attemptOpen = window.open(url, '_blank');
+            
+            // If it fails (blocked or app not installed), show instructions
+            setTimeout(function() {
+                if (!attemptOpen || attemptOpen.closed || typeof attemptOpen.closed == 'undefined') {
+                    let message = '';
+                    if (appType === 'digipay') {
+                        message = 'Khan Bank DigiPay апп суулгаагүй байна.\n\nТатаж суулгасны дараа дахин оролдоно уу.';
+                        if (confirm(message + '\n\nАпп татах хуудас руу очих уу?')) {
+                            // Detect iOS or Android
+                            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                                window.open('https://apps.apple.com/us/app/digi-pay/id6478477781', '_blank');
+                            } else {
+                                window.open('https://play.google.com/store/apps/details?id=com.khanbank.wallet', '_blank');
+                            }
+                        }
+                    } else {
+                        message = 'Pass.mn апп суулгаагүй байна.\n\nТатаж суулгасны дараа дахин оролдоно уу.';
+                        if (confirm(message + '\n\nАпп татах хуудас руу очих уу?')) {
+                            // Detect iOS or Android
+                            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                                window.open('https://apps.apple.com/us/app/pass-mn/id1510760757', '_blank');
+                            } else {
+                                window.open('https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile', '_blank');
+                            }
+                        }
+                    }
+                    
+                    // Highlight QR code as alternative
+                    document.getElementById('qr-code-image').style.border = '3px solid #e62b1e';
+                    document.getElementById('qr-code-image').style.animation = 'pulse 1s';
+                }
+            }, 1000);
+        }
+
         // Show status checking message
         setTimeout(function() {
             document.getElementById('status-check').style.display = 'block';
         }, 2000);
 
         // Auto-check payment status every 5 seconds
-        const orderId = "{{ payment_url.split('/')[-1] }}";
         const checkInterval = setInterval(function() {
             fetch('/api/check_payment_status/' + orderId)
                 .then(response => response.json())

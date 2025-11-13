@@ -111,7 +111,7 @@
         }
         .success h3 {
             color: #2e7d32;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-size: 20px;
         }
         .success p {
@@ -136,14 +136,62 @@
             font-size: 14px;
             color: #666;
             margin: 15px 0;
-            text-align: left;
+            text-align: center;
             line-height: 1.8;
         }
         .instructions strong {
             color: #333;
             display: block;
             margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .payment-options {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .payment-link {
+            flex: 1;
+            display: inline-block;
+            padding: 16px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 15px;
             text-align: center;
+        }
+        .payment-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .payment-link.digipay {
+            background: #667eea;
+        }
+        .payment-link.digipay:hover {
+            background: #5568d3;
+        }
+        .payment-link.passapp {
+            background: #4caf50;
+        }
+        .payment-link.passapp:hover {
+            background: #45a049;
+        }
+        .download-section {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .download-section strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 13px;
         }
         .download-link {
             color: #667eea;
@@ -154,30 +202,13 @@
         .download-link:hover {
             text-decoration: underline;
         }
-        .payment-link {
-            display: inline-block;
-            padding: 14px 35px;
-            background: #4caf50;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        .payment-link:hover {
-            background: #45a049;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
-        }
         .order-id {
             margin-top: 15px;
             font-size: 11px;
             color: #999;
         }
         .checking-status {
-            margin-top: 10px;
+            margin-top: 15px;
             padding: 10px;
             background: #fff3cd;
             border-left: 4px solid #ffc107;
@@ -246,34 +277,53 @@
             {% if qr_code_base64 %}
             <div class="qr-container">
                 <img src="data:image/png;base64,{{ qr_code_base64 }}" 
-                     alt="QR Code">
+                     alt="Payment QR Code">
+                <p style="font-size: 12px; color: #999; margin-top: 10px;">QR кодыг DigiPay эсвэл Pass.mn аппаар уншуулна уу</p>
             </div>
             {% endif %}
             
             <div class="instructions">
-                <strong>📱 Утсаар QR код уншуулна уу:</strong>
-                
-                1️⃣ Pass.mn апп татаж суулгана уу<br>
-                <a href="https://repo.databank.mn/apk/pass-v411.apk" 
-                   class="download-link">
-                   📥 Pass.mn APK татах
-                </a><br><br>
-                
-                2️⃣ Pass.mn апп нээж QR код уншуулна уу<br><br>
-                
-                3️⃣ Эсвэл доорх товч дээр утаснаасаа дарна уу
+                <strong>📱 Төлбөр төлөх хэрэгслээ сонгоно уу:</strong>
             </div>
             
-            <a href="{{ payment_url }}" class="payment-link">
-                📱 Pass.mn-ээр төлөх
-            </a>
+            <!-- Payment Options -->
+            <div class="payment-options">
+                <a href="{{ payment_url }}" class="payment-link digipay">
+                    💳 DigiPay
+                </a>
+                
+                <a href="{{ payment_url }}" class="payment-link passapp">
+                    📱 Pass.mn
+                </a>
+            </div>
+            
+            <!-- Download Instructions -->
+            <div class="download-section">
+                <strong>📥 Апп татах холбоос:</strong>
+                
+                <div style="margin: 5px 0;">
+                    • DigiPay: 
+                    <a href="https://play.google.com/store/apps/details?id=mn.digipay.app" 
+                       class="download-link" target="_blank">
+                       Google Play
+                    </a>
+                </div>
+                
+                <div style="margin: 5px 0;">
+                    • Pass.mn: 
+                    <a href="https://repo.databank.mn/apk/pass-v411.apk" 
+                       class="download-link">
+                       APK татах
+                    </a>
+                </div>
+            </div>
             
             <div id="status-check" class="checking-status" style="display: none;">
                 ⏳ Төлбөрийн төлөв шалгаж байна...
             </div>
             
             <p class="order-id">
-                Order: {{ payment_url.split('/')[-1] }}
+                Order ID: {{ payment_url.split('/')[-1] }}
             </p>
         </div>
         {% endif %}

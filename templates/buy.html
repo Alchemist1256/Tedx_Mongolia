@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тасалбар худалдан авах - TEDx Khan Uul</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -16,168 +19,348 @@
             padding: 20px;
         }
         .container { 
-            max-width: 500px; 
+            max-width: 550px; 
             width: 100%;
-            padding: 40px; 
-            background: white; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 50px 40px; 
+            background: #ffffff; 
+            border-radius: 0; 
+            box-shadow: 0 25px 70px rgba(235, 0, 40, 0.3);
+            border-top: 8px solid #EB0028;
         }
         h2 { 
-            color: #333; 
-            margin-bottom: 10px;
+            color: #000000; 
+            margin-bottom: 5px;
             text-align: center;
-            font-size: 28px;
+            font-size: 32px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .tedx-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tedx-logo span {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+        .tedx-logo .ted {
+            color: #000000;
+        }
+        .tedx-logo .x {
+            color: #EB0028;
         }
         .subtitle {
             color: #666;
             text-align: center;
             margin-bottom: 30px;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 400;
+            letter-spacing: 1px;
         }
         .user-info {
-            background: #f8f9fa;
+            background: #000000;
+            color: #ffffff;
             padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            border-radius: 0;
+            margin-bottom: 30px;
             text-align: center;
-            color: #666;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         .price-box {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
+            background: #000000;
+            padding: 30px;
+            border-radius: 0;
+            margin-bottom: 30px;
             text-align: center;
+            border: 4px solid #EB0028;
         }
         .price-label {
-            color: #666;
+            color: #ffffff;
             font-size: 14px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
         }
         .price {
-            font-size: 42px;
-            font-weight: bold;
-            color: #e62b1e;
+            font-size: 56px;
+            font-weight: 900;
+            color: #EB0028;
             margin: 10px 0;
+            letter-spacing: -2px;
         }
         .currency {
-            font-size: 24px;
+            font-size: 28px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .payment-options {
+            margin-bottom: 25px;
+        }
+        .payment-option {
+            background: #f8f8f8;
+            border: 3px solid #e0e0e0;
+            border-radius: 0;
+            padding: 25px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .payment-option:hover {
+            border-color: #EB0028;
+            background: #ffffff;
+            transform: translateX(5px);
+            box-shadow: -5px 0 0 #EB0028;
+        }
+        .payment-option.selected {
+            border-color: #EB0028;
+            background: #000000;
+            box-shadow: -5px 0 0 #EB0028;
+        }
+        .payment-option.selected .payment-title {
+            color: #ffffff;
+        }
+        .payment-option.selected .payment-description {
+            color: #cccccc;
+        }
+        .payment-icon {
+            font-size: 40px;
+            min-width: 50px;
+            text-align: center;
+        }
+        .payment-details {
+            flex: 1;
+        }
+        .payment-title {
+            font-size: 17px;
+            font-weight: 900;
+            color: #000000;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .payment-description {
+            font-size: 13px;
             color: #666;
+            font-weight: 400;
         }
         .button { 
             width: 100%;
-            padding: 16px 20px; 
-            font-size: 18px; 
-            font-weight: bold;
+            padding: 18px 20px; 
+            font-size: 16px; 
+            font-weight: 900;
             border: none; 
-            background: #e62b1e; 
-            color: white; 
-            border-radius: 10px; 
+            background: #EB0028; 
+            color: #ffffff; 
+            border-radius: 0; 
             cursor: pointer;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         .button:hover {
-            background: #c41e14;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(230, 43, 30, 0.3);
+            background: #000000;
+            box-shadow: 0 0 0 3px #EB0028;
+        }
+        .button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         .error { 
-            color: #d32f2f; 
-            margin-top: 15px;
-            padding: 12px;
-            background: #ffebee;
-            border-left: 4px solid #d32f2f;
-            border-radius: 5px;
+            color: #ffffff; 
+            margin-top: 20px;
+            padding: 15px;
+            background: #EB0028;
+            border-left: 5px solid #000000;
+            border-radius: 0;
             font-size: 14px;
+            font-weight: 700;
         }
         .success {
-            margin-top: 20px;
-            padding: 25px;
-            background: #e8f5e9;
-            border-radius: 10px;
+            margin-top: 25px;
+            padding: 30px;
+            background: #000000;
+            border-radius: 0;
             text-align: center;
-            border-left: 4px solid #4caf50;
+            border: 4px solid #EB0028;
         }
         .success h3 {
-            color: #2e7d32;
-            margin-bottom: 15px;
-            font-size: 20px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         .qr-container {
             text-align: center;
-            margin: 20px 0;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
+            margin: 25px 0;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 0;
         }
         .qr-container img {
-            max-width: 250px;
-            border: 10px solid white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 5px;
+            max-width: 280px;
+            border: 8px solid #EB0028;
+            box-shadow: 0 0 0 4px #000000;
+            border-radius: 0;
         }
         .instructions {
             font-size: 14px;
-            color: #666;
-            margin: 15px 0;
-            line-height: 1.6;
+            color: #ffffff;
+            margin: 20px 0;
+            line-height: 1.8;
+            text-align: left;
         }
         .instructions strong {
-            color: #333;
+            color: #EB0028;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .download-section {
-            font-size: 11px;
-            color: #666;
-            margin-top: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            font-size: 12px;
+            color: #000000;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 0;
             text-align: center;
+            border-left: 4px solid #EB0028;
         }
         .download-link {
-            color: #667eea;
-            font-size: 11px;
+            color: #EB0028;
+            font-size: 12px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 900;
             margin: 0 5px;
+            text-transform: uppercase;
         }
         .download-link:hover {
             text-decoration: underline;
+            color: #000000;
         }
         .order-id {
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 11px;
-            color: #999;
+            color: #999999;
+            font-family: 'Courier New', monospace;
         }
         .checking-status {
-            margin-top: 15px;
-            padding: 10px;
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            border-radius: 5px;
+            margin-top: 20px;
+            padding: 12px;
+            background: #EB0028;
+            border-left: 5px solid #ffffff;
+            border-radius: 0;
             font-size: 13px;
-            color: #856404;
+            color: #ffffff;
+            font-weight: 700;
         }
         .back-link {
             display: block;
             text-align: center;
-            margin-top: 25px;
-            color: #667eea;
+            margin-top: 30px;
+            color: #000000;
             text-decoration: none;
             font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .back-link:hover {
-            text-decoration: underline;
+            color: #EB0028;
+        }
+        .bank-transfer-info {
+            background: #000000;
+            border: 4px solid #EB0028;
+            border-radius: 0;
+            padding: 30px;
+            margin-top: 25px;
+        }
+        .bank-transfer-info h3 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .bank-detail {
+            background: #ffffff;
+            padding: 15px 20px;
+            border-radius: 0;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #EB0028;
+        }
+        .bank-detail strong {
+            color: #000000;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .bank-detail span {
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+        .bank-warning {
+            margin-top: 20px;
+            padding: 15px;
+            background: #EB0028;
+            border-radius: 0;
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .bank-warning strong {
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 25px;
+            }
+            h2 {
+                font-size: 28px;
+            }
+            .tedx-logo span {
+                font-size: 40px;
+            }
+            .price {
+                font-size: 48px;
+            }
+            .payment-option {
+                padding: 20px;
+                gap: 15px;
+            }
+            .payment-icon {
+                font-size: 32px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🎟️ Тасалбар худалдан авах</h2>
-        <p class="subtitle">TEDx Khan Uul 2024</p>
+        <div class="tedx-logo">
+            <span class="ted">TED</span><span class="x">x</span>
+        </div>
+        <h2>Тасалбар</h2>
+        <p class="subtitle">KHAN UUL 2024</p>
         
         {% if user %}
         <div class="user-info">
@@ -186,29 +369,73 @@
         {% endif %}
         
         <div class="price-box">
-            <div class="price-label">Тасалбарын үнэ</div>
+            <div class="price-label">Үнэ</div>
             <div class="price">
                 100
                 <span class="currency">₮</span>
             </div>
         </div>
 
-        {% if not payment_url %}
-        <form method="POST" action="{{ url_for('buy') }}">
-            <button type="submit" class="button">💳 Төлбөр төлөх</button>
+        {% if not payment_url and not show_bank_transfer %}
+        <form method="POST" action="{{ url_for('buy') }}" id="paymentForm">
+            <div class="payment-options">
+                <div class="payment-option" onclick="selectPayment('qr')">
+                    <div class="payment-icon">📱</div>
+                    <div class="payment-details">
+                        <div class="payment-title">Pass / DigiPay</div>
+                        <div class="payment-description">QR код ашиглан шууд төлөх</div>
+                    </div>
+                </div>
+                
+                <div class="payment-option" onclick="selectPayment('bank')">
+                    <div class="payment-icon">🏦</div>
+                    <div class="payment-details">
+                        <div class="payment-title">Дансаар шилжүүлэх</div>
+                        <div class="payment-description">Банкны дансруу шилжүүлэх</div>
+                    </div>
+                </div>
+            </div>
+            
+            <input type="hidden" name="payment_method" id="payment_method" value="">
+            <button type="submit" class="button" id="submitBtn" disabled>Төлбөр төлөх</button>
         </form>
         {% endif %}
 
         {% if error_msg %}
             <div class="error">
-                <strong>❌ Алдаа гарлаа:</strong><br>
-                {{ error_msg }}
+                <strong>❌ АЛДАА:</strong> {{ error_msg }}
             </div>
+        {% endif %}
+
+        {% if show_bank_transfer %}
+        <div class="bank-transfer-info">
+            <h3>🏦 Банкны мэдээлэл</h3>
+            <div class="bank-detail">
+                <strong>Банк:</strong>
+                <span>Хаан банк</span>
+            </div>
+            <div class="bank-detail">
+                <strong>Дансны дугаар:</strong>
+                <span>MN280005005311194441</span>
+            </div>
+            <div class="bank-detail">
+                <strong>Дансны нэр:</strong>
+                <span>Намсрай Ариунбилэг</span>
+            </div>
+            <div class="bank-detail">
+                <strong>Утга:</strong>
+                <span>{{ user.first_name }} {{ user.last_name }} {{ user.phone }}</span>
+            </div>
+            <div class="bank-warning">
+                ⚠️ <strong>Анхаар:</strong> Шилжүүлсний дараа шилжүүлгийн зураг авж хадгалан уу.
+            </div>
+        </div>
+        <a href="{{ url_for('buy') }}" class="back-link">← Буцах</a>
         {% endif %}
 
         {% if payment_url %}
         <div class="success">
-            <h3>✅ Төлбөрийн QR код бэлэн!</h3>
+            <h3>✅ QR Код бэлэн</h3>
             
             {% if qr_code_base64 %}
             <div class="qr-container">
@@ -217,25 +444,25 @@
             {% endif %}
             
             <div class="instructions">
-                <strong>📱 Төлбөр төлөх заавар:</strong>
-                1. DigiPay эсвэл Pass.mn аппыг нээнэ үү<br>
+                <strong>📱 Заавар:</strong>
+                1. Pass.mn аппыг нээнэ үү<br>
                 2. QR код уншуулах товчийг дарна уу<br>
                 3. Дээрх QR кодыг уншуулна уу<br>
                 4. 100₮ төлнө үү
             </div>
             
             <div class="download-section">
-                <div style="font-size: 12px; margin-bottom: 8px; color: #333;">
-                    💡 Апп суулгаагүй бол:
+                <div style="font-size: 13px; margin-bottom: 10px; color: #000; font-weight: 900;">
+                    💡 АПП ТАТАХ:
                 </div>
-                <div>
+                <div style="margin-bottom: 8px;">
                     🏦 DigiPay: 
                     <a href="https://apps.apple.com/us/app/digi-pay/id6478477781" 
                        class="download-link" target="_blank">iPhone</a>
                     <a href="https://play.google.com/store/apps/details?id=com.khanbank.wallet" 
                        class="download-link" target="_blank">Android</a>
                 </div>
-                <div style="margin-top: 5px;">
+                <div>
                     📱 Pass.mn: 
                     <a href="https://apps.apple.com/us/app/pass-mn/id1510760757" 
                        class="download-link" target="_blank">iPhone</a>
@@ -249,13 +476,32 @@
             </div>
             
             <p class="order-id">
-                Order ID: {{ payment_url.split('/')[-1] if payment_url else '' }}
+                Order: {{ payment_url.split('/')[-1] if payment_url else '' }}
             </p>
         </div>
         {% endif %}
 
-        <a href="{{ url_for('index') }}" class="back-link">← Нүүр хуудас руу буцах</a>
+        <a href="{{ url_for('index') }}" class="back-link">← Нүүр хуудас</a>
     </div>
+
+    <script>
+        let selectedPaymentMethod = '';
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            document.getElementById('payment_method').value = method;
+            
+            // Remove selected class from all options
+            const options = document.querySelectorAll('.payment-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            // Enable submit button
+            document.getElementById('submitBtn').disabled = false;
+        }
+    </script>
 
     {% if payment_url %}
     <script>
@@ -274,9 +520,9 @@
                     if (data.status === 'paid') {
                         clearInterval(checkInterval);
                         document.getElementById('status-check').innerHTML = '✅ Төлбөр амжилттай! Шилжүүлж байна...';
-                        document.getElementById('status-check').style.background = '#d4edda';
-                        document.getElementById('status-check').style.borderColor = '#28a745';
-                        document.getElementById('status-check').style.color = '#155724';
+                        document.getElementById('status-check').style.background = '#000000';
+                        document.getElementById('status-check').style.borderColor = '#EB0028';
+                        document.getElementById('status-check').style.color = '#ffffff';
                         setTimeout(function() {
                             window.location.href = '/ticket/' + data.ticket_id;
                         }, 1000);

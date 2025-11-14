@@ -344,6 +344,10 @@ def ticket_success(ticket_id):
 # ---------- Admin Routes ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
+    # If already logged in as admin, redirect to dashboard
+    if session.get('is_admin'):
+        return redirect(url_for('admin_dashboard'))
+    
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -361,18 +365,22 @@ def admin_login():
     return render_template('admin_login.html')
 
 @app.route('/admin')
-@admin_required
+@admin_required  # This decorator will redirect to login if not authenticated
 def admin_dashboard():
     total_users = User.query.count()
     total_tickets = Ticket.query.count()
     paid_tickets = Ticket.query.filter_by(status='paid').count()
     pending_tickets = Ticket.query.filter_by(status='pending').count()
     
-    # Count tickets by payment method
+    # FIX: Only count QR payment method tickets (not bank transfers)
     qr_tickets = Ticket.query.filter_by(payment_method='qr').count()
     bank_tickets = Ticket.query.filter_by(payment_method='bank').count()
     qr_paid = Ticket.query.filter_by(payment_method='qr', status='paid').count()
     bank_paid = Ticket.query.filter_by(payment_method='bank', status='paid').count()
+    
+    # Calculate pending only for QR payments
+    qr_pending = qr_tickets - qr_paid
+    bank_pending = bank_tickets - bank_paid
     
     recent_users = User.query.order_by(User.created_at.desc()).limit(10).all()
     recent_tickets = Ticket.query.order_by(Ticket.created_at.desc()).limit(10).all()
@@ -386,6 +394,8 @@ def admin_dashboard():
                          bank_tickets=bank_tickets,
                          qr_paid=qr_paid,
                          bank_paid=bank_paid,
+                         qr_pending=qr_pending,
+                         bank_pending=bank_pending,
                          recent_users=recent_users,
                          recent_tickets=recent_tickets)
 

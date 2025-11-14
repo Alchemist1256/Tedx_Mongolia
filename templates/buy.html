@@ -382,7 +382,7 @@
                 <div class="payment-option" onclick="selectPayment('qr')">
                     <div class="payment-icon">📱</div>
                     <div class="payment-details">
-                        <div class="payment-title">Pass / DigiPay</div>
+                        <div class="payment-title">Pass </div>
                         <div class="payment-description">QR код ашиглан шууд төлөх</div>
                     </div>
                 </div>
@@ -424,10 +424,10 @@
             </div>
             <div class="bank-detail">
                 <strong>Утга:</strong>
-                <span>{{ user.first_name }} {{ user.last_name }} {{ user.phone }}</span>
+                <span>{{ user.first_name }} {{ user.last_name }} {{ user.phone }} </span>
             </div>
             <div class="bank-warning">
-                ⚠️ <strong>Анхаар:</strong> Шилжүүлсний дараа шилжүүлгийн зураг авж хадгалан уу.
+                ⚠️ <strong>Анхаар:</strong> Шилжүүлсний дараа шилжүүлгийн зураг авж (screen shot) хадгална уу.
             </div>
         </div>
         <a href="{{ url_for('buy') }}" class="back-link">← Буцах</a>
@@ -448,7 +448,8 @@
                 1. Pass.mn аппыг нээнэ үү<br>
                 2. QR код уншуулах товчийг дарна уу<br>
                 3. Дээрх QR кодыг уншуулна уу<br>
-                4. 100₮ төлнө үү
+                4. 500₮ төлнө үү<br>
+                5. Зөвхөн Pass application тай хүн төлнө
             </div>
             
             <div class="download-section">
@@ -456,19 +457,13 @@
                     💡 АПП ТАТАХ:
                 </div>
                 <div style="margin-bottom: 8px;">
-                    🏦 DigiPay: 
-                    <a href="https://apps.apple.com/us/app/digi-pay/id6478477781" 
-                       class="download-link" target="_blank">iPhone</a>
-                    <a href="https://play.google.com/store/apps/details?id=com.khanbank.wallet" 
-                       class="download-link" target="_blank">Android</a>
-                </div>
-                <div>
                     📱 Pass.mn: 
                     <a href="https://apps.apple.com/us/app/pass-mn/id1510760757" 
                        class="download-link" target="_blank">iPhone</a>
                     <a href="https://play.google.com/store/apps/details?id=mn.databank.ewalletmobile" 
                        class="download-link" target="_blank">Android</a>
                 </div>
+                
             </div>
             
             <div id="status-check" class="checking-status" style="display: none;">
@@ -534,4 +529,3 @@
     {% endif %}
 </body>
 </html>
-

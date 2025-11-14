@@ -16,7 +16,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 # Database config
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
-    'postgresql://tedx_27iq_user:jUVHT7tYZ0jzUcTNhDiVl4FGX2WLiYZQ@dpg-d3v6osbipnbc739einfg-a.oregon-postgres.render.com/tedx_27iq'
+    'postgresql://tedx_mongolia_user:6k1Wg8hro4mXRtuKuTOCgcAM7Q5ThZqi@dpg-d4bj1h6mcj7s73fhjre0-a.oregon-postgres.render.com/tedx_mongolia'
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)

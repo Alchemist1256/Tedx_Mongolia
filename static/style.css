@@ -9,7 +9,7 @@ body{
   position: relative;
   display: flex;
   flex-direction: column;
-  background: black;
+  background: white;
   max-width: 100vw;
   overflow-x: hidden;
 
@@ -169,7 +169,7 @@ a{
   text-transform: uppercase;
 }
 .cover-title-first{
-  color: white;
+  color: black;
 }
 .cover-title-second{
   color: var(--secondary-color);

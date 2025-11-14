@@ -146,25 +146,7 @@
             font-weight: 600;
             margin-bottom: 10px;
         }
-        .payment-breakdown {
-            display: flex;
-            gap: 15px;
-            font-size: 13px;
-        }
-        .paid-count {
-            color: #155724;
-            background: #d4edda;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-weight: 600;
-        }
-        .pending-count {
-            color: #856404;
-            background: #fff3cd;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-weight: 600;
-        }
+        
         .section {
             margin-bottom: 50px;
         }
@@ -288,35 +270,27 @@
         </div>
 
         <!-- Payment Method Statistics -->
-        <div class="payment-stats">
-            <h2 style="margin-bottom: 20px; color: #333;">💳 Payment Methods</h2>
-            <div class="payment-method-cards">
-                <div class="payment-card qr">
-                    <div class="payment-icon">📱</div>
-                    <div class="payment-info">
-                        <div class="payment-total">{{ qr_tickets }}</div>
-                        <div class="payment-label">Pass/DigiPay (QR)</div>
-                        <div class="payment-breakdown">
-                            <span class="paid-count">✅ {{ qr_paid }} paid</span>
-                            <span class="pending-count">⏳ {{ qr_tickets - qr_paid }} pending</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="payment-card bank">
-                    <div class="payment-icon">🏦</div>
-                    <div class="payment-info">
-                        <div class="payment-total">{{ bank_tickets }}</div>
-                        <div class="payment-label">Bank Transfer</div>
-                        <div class="payment-breakdown">
-                            <span class="paid-count">✅ {{ bank_paid }} paid</span>
-                            <span class="pending-count">⏳ {{ bank_tickets - bank_paid }} pending</span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Payment Method Statistics -->
+<div class="payment-stats">
+    <h2 style="margin-bottom: 20px; color: #333;">💳 Payments by Method (Paid Only)</h2>
+    <div class="payment-method-cards">
+        <div class="payment-card qr">
+            <div class="payment-icon">📱</div>
+            <div class="payment-info">
+                <div class="payment-total">{{ qr_paid }}</div>
+                <div class="payment-label">Pass/DigiPay (QR) - Paid</div>
             </div>
         </div>
-
+        
+        <div class="payment-card bank">
+            <div class="payment-icon">🏦</div>
+            <div class="payment-info">
+                <div class="payment-total">{{ bank_paid }}</div>
+                <div class="payment-label">Bank Transfer - Paid</div>
+            </div>
+        </div>
+    </div>
+</div>
         <div class="section">
             <h2>👥 Recent Users</h2>
             {% if recent_users %}
@@ -399,3 +373,4 @@
     </div>
 </body>
 </html>
+

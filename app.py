@@ -12,6 +12,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
+
 # Database config
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
@@ -46,6 +47,14 @@ class Ticket(db.Model):
     payment_method = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     paid_at = db.Column(db.DateTime, nullable=True)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('admin_login'))  # <--- now correct
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ---------------- Helpers ----------------
 def logged_in_user():
@@ -365,39 +374,32 @@ def admin_login():
     return render_template('admin_login.html')
 
 @app.route('/admin')
-@admin_required  # This decorator will redirect to login if not authenticated
+@admin_required
 def admin_dashboard():
     total_users = User.query.count()
     total_tickets = Ticket.query.count()
     paid_tickets = Ticket.query.filter_by(status='paid').count()
-    pending_tickets = Ticket.query.filter_by(status='pending').count()
-    
-    # FIX: Only count QR payment method tickets (not bank transfers)
+
     qr_tickets = Ticket.query.filter_by(payment_method='qr').count()
-    bank_tickets = Ticket.query.filter_by(payment_method='bank').count()
     qr_paid = Ticket.query.filter_by(payment_method='qr', status='paid').count()
-    bank_paid = Ticket.query.filter_by(payment_method='bank', status='paid').count()
-    
-    # Calculate pending only for QR payments
-    qr_pending = qr_tickets - qr_paid
-    bank_pending = bank_tickets - bank_paid
-    
+
     recent_users = User.query.order_by(User.created_at.desc()).limit(10).all()
     recent_tickets = Ticket.query.order_by(Ticket.created_at.desc()).limit(10).all()
-    
+
     return render_template('admin_dashboard.html',
-                         total_users=total_users,
-                         total_tickets=total_tickets,
-                         paid_tickets=paid_tickets,
-                         pending_tickets=pending_tickets,
-                         qr_tickets=qr_tickets,
-                         bank_tickets=bank_tickets,
-                         qr_paid=qr_paid,
-                         bank_paid=bank_paid,
-                         qr_pending=qr_pending,
-                         bank_pending=bank_pending,
-                         recent_users=recent_users,
-                         recent_tickets=recent_tickets)
+                           total_users=total_users,
+                           total_tickets=total_tickets,
+                           paid_tickets=paid_tickets,
+                           pending_tickets=pending_tickets,
+                           qr_tickets=qr_tickets,
+                           bank_tickets=bank_tickets,
+                           qr_paid=qr_paid,
+                           bank_paid=bank_paid,
+                           qr_pending=qr_pending,
+                           bank_pending=bank_pending,
+                           recent_users=recent_users,
+                           recent_tickets=recent_tickets)
+
 
 @app.route('/admin/users')
 @admin_required

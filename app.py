@@ -154,71 +154,86 @@ def buy():
 
     # Payment Configuration - PRODUCTION
     api_url = "https://ecom.pass.mn/openapi/v1/ecom/create_order"
-    ecommerce_token = "0c8e9f21efcc45baa5a49ccb32e84836"  # Your production token
-    amount = "10000"  # 100 Tugrik
+    ecommerce_token = "0c8e9f21efcc45baa5a49ccb32e84836"
+    amount = "50000"
     callback_url = "https://tedx-mongolia.onrender.com/callback"
 
     payment_url = None
     error_msg = None
     api_response = None
     qr_code_base64 = None
+    show_bank_transfer = False
 
     if request.method == 'POST':
-        payload = {
-            "ecommerce_token": ecommerce_token,
-            "amount": amount,
-            "callback_url": callback_url
-        }
-        headers = {"Content-Type": "application/json"}
+        payment_method = request.form.get('payment_method')
+        
+        # Handle bank transfer option
+        if payment_method == 'bank':
+            show_bank_transfer = True
+            return render_template(
+                "buy.html",
+                user=user,
+                amount=amount,
+                show_bank_transfer=show_bank_transfer
+            )
+        
+        # Handle QR payment option
+        if payment_method == 'qr':
+            payload = {
+                "ecommerce_token": ecommerce_token,
+                "amount": amount,
+                "callback_url": callback_url
+            }
+            headers = {"Content-Type": "application/json"}
 
-        try:
-            resp = requests.post(api_url, json=payload, headers=headers, timeout=60)
-            data = resp.json()
-            api_response = data
+            try:
+                resp = requests.post(api_url, json=payload, headers=headers, timeout=60)
+                data = resp.json()
+                api_response = data
 
-            if data.get("status_code") == "ok" and "ret" in data:
-                ret = data["ret"]
-                order_id_url = ret.get("order_id")
-                
-                if order_id_url:
-                    payment_url = order_id_url
+                if data.get("status_code") == "ok" and "ret" in data:
+                    ret = data["ret"]
+                    order_id_url = ret.get("order_id")
                     
-                    # Generate QR code
-                    qr = qrcode.QRCode(version=1, box_size=10, border=5)
-                    qr.add_data(order_id_url)
-                    qr.make(fit=True)
-                    img = qr.make_image(fill_color="black", back_color="white")
-                    
-                    buffered = io.BytesIO()
-                    img.save(buffered, format="PNG")
-                    qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
-                    
-                    # Save ticket to database
-                    order_uuid = order_id_url.split("/")[-1]
-                    ticket = Ticket(
-                        user_id=user.id,
-                        order_id=order_uuid,
-                        status="pending",
-                        amount=amount
-                    )
-                    db.session.add(ticket)
-                    db.session.commit()
-                    
-                    print(f"✅ Order created: {order_uuid}")
+                    if order_id_url:
+                        payment_url = order_id_url
+                        
+                        # Generate QR code
+                        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+                        qr.add_data(order_id_url)
+                        qr.make(fit=True)
+                        img = qr.make_image(fill_color="black", back_color="white")
+                        
+                        buffered = io.BytesIO()
+                        img.save(buffered, format="PNG")
+                        qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
+                        
+                        # Save ticket to database
+                        order_uuid = order_id_url.split("/")[-1]
+                        ticket = Ticket(
+                            user_id=user.id,
+                            order_id=order_uuid,
+                            status="pending",
+                            amount=amount
+                        )
+                        db.session.add(ticket)
+                        db.session.commit()
+                        
+                        print(f"✅ Order created: {order_uuid}")
+                    else:
+                        error_msg = "Order ID буцаагдсангүй"
                 else:
-                    error_msg = "Order ID буцаагдсангүй"
-            else:
-                msg = data.get("msg", {})
-                error_code = msg.get("code", "Unknown")
-                error_body = msg.get("body", "Алдаа гарлаа")
-                error_msg = f"Алдаа [{error_code}]: {error_body}"
+                    msg = data.get("msg", {})
+                    error_code = msg.get("code", "Unknown")
+                    error_body = msg.get("body", "Алдаа гарлаа")
+                    error_msg = f"Алдаа [{error_code}]: {error_body}"
 
-        except requests.exceptions.Timeout:
-            error_msg = "Хүсэлт хугацаа хэтрэв (60 секунд). Дахин оролдоно уу."
-        except requests.exceptions.RequestException as e:
-            error_msg = f"Сүлжээний алдаа: {str(e)}"
-        except Exception as e:
-            error_msg = f"Серверт алдаа гарлаа: {str(e)}"
+            except requests.exceptions.Timeout:
+                error_msg = "Хүсэлт хугацаа хэтрэв (60 секунд). Дахин оролдоно уу."
+            except requests.exceptions.RequestException as e:
+                error_msg = f"Сүлжээний алдаа: {str(e)}"
+            except Exception as e:
+                error_msg = f"Серверт алдаа гарлаа: {str(e)}"
 
     return render_template(
         "buy.html",
@@ -227,9 +242,9 @@ def buy():
         payment_url=payment_url,
         error_msg=error_msg,
         api_response=api_response,
-        qr_code_base64=qr_code_base64
+        qr_code_base64=qr_code_base64,
+        show_bank_transfer=show_bank_transfer
     )
-
 # ---------- Callback ----------
 @app.route('/callback', methods=['POST', 'GET'])
 def callback():

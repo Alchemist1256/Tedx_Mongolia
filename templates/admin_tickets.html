@@ -13,7 +13,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             padding: 40px;
@@ -118,6 +118,7 @@
                     <th>User Name</th>
                     <th>Email</th>
                     <th>Phone</th>
+                    <th>Payment Method</th>
                     <th>Order ID</th>
                     <th>Amount</th>
                     <th>Status</th>
@@ -132,6 +133,15 @@
                     <td>{{ ticket.user.first_name }} {{ ticket.user.last_name }}</td>
                     <td>{{ ticket.user.email }}</td>
                     <td>{{ ticket.user.phone }}</td>
+                    <td>
+                        {% if ticket.payment_method == 'qr' %}
+                            <span style="background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">📱 QR</span>
+                        {% elif ticket.payment_method == 'bank' %}
+                            <span style="background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">🏦 BANK</span>
+                        {% else %}
+                            <span style="color: #999;">N/A</span>
+                        {% endif %}
+                    </td>
                     <td><code>{{ ticket.order_id if ticket.order_id else 'N/A' }}</code></td>
                     <td><strong>{{ ticket.amount if ticket.amount else '100' }}₮</strong></td>
                     <td>

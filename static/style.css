@@ -9,7 +9,7 @@ body{
   position: relative;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: black;
   max-width: 100vw;
   overflow-x: hidden;
 
@@ -992,3 +992,4 @@ a{
 /* ------------------------------ */
 /* END */
 /* ------------------------------ */
+

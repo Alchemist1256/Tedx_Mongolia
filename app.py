@@ -43,6 +43,7 @@ class Ticket(db.Model):
     status = db.Column(db.String(50), default="pending")
     amount = db.Column(db.String(20), nullable=True)
     payment_request_id = db.Column(db.String(100), nullable=True)
+    payment_method = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     paid_at = db.Column(db.DateTime, nullable=True)
 
@@ -86,6 +87,10 @@ with app.app_context():
     if 'paid_at' not in columns:
         with db.engine.connect() as conn:
             conn.execute(text('ALTER TABLE tickets ADD COLUMN paid_at TIMESTAMP;'))
+            conn.commit()
+    if 'payment_method' not in columns:
+        with db.engine.connect() as conn:
+            conn.execute(text("ALTER TABLE tickets ADD COLUMN payment_method VARCHAR(50);"))
             conn.commit()
 
 # ---------------- Routes ----------------
@@ -169,6 +174,16 @@ def buy():
         
         # Handle bank transfer option
         if payment_method == 'bank':
+            # Save ticket with bank transfer method
+            ticket = Ticket(
+                user_id=user.id,
+                status="pending",
+                amount=amount,
+                payment_method="bank"
+            )
+            db.session.add(ticket)
+            db.session.commit()
+            
             show_bank_transfer = True
             return render_template(
                 "buy.html",
@@ -208,13 +223,14 @@ def buy():
                         img.save(buffered, format="PNG")
                         qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
                         
-                        # Save ticket to database
+                        # Save ticket to database with payment method
                         order_uuid = order_id_url.split("/")[-1]
                         ticket = Ticket(
                             user_id=user.id,
                             order_id=order_uuid,
                             status="pending",
-                            amount=amount
+                            amount=amount,
+                            payment_method="qr"
                         )
                         db.session.add(ticket)
                         db.session.commit()
@@ -245,6 +261,7 @@ def buy():
         qr_code_base64=qr_code_base64,
         show_bank_transfer=show_bank_transfer
     )
+
 # ---------- Callback ----------
 @app.route('/callback', methods=['POST', 'GET'])
 def callback():
@@ -256,12 +273,10 @@ def callback():
         
         print(f"📩 Callback received: {data}")
         
-        # Extract order_id and payment status
         order_id = data.get('order_id')
         resp_code = data.get('resp_code')
         resp_msg = data.get('resp_msg')
         
-        # Extract UUID from URL if needed
         if order_id and ('http://' in order_id or 'https://' in order_id):
             order_uuid = order_id.split('/')[-1]
         else:
@@ -273,7 +288,6 @@ def callback():
             ticket = Ticket.query.filter_by(order_id=order_uuid).first()
             
             if ticket:
-                # resp_code "000" means success
                 if resp_code == "000":
                     ticket.status = "paid"
                     ticket.paid_at = datetime.utcnow()
@@ -328,9 +342,6 @@ def ticket_success(ticket_id):
     return render_template('ticket_success.html', ticket=ticket, user=user)
 
 # ---------- Admin Routes ----------
-# ... (all your existing code above) ...
-
-# ---------- Admin Routes ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -357,6 +368,12 @@ def admin_dashboard():
     paid_tickets = Ticket.query.filter_by(status='paid').count()
     pending_tickets = Ticket.query.filter_by(status='pending').count()
     
+    # Count tickets by payment method
+    qr_tickets = Ticket.query.filter_by(payment_method='qr').count()
+    bank_tickets = Ticket.query.filter_by(payment_method='bank').count()
+    qr_paid = Ticket.query.filter_by(payment_method='qr', status='paid').count()
+    bank_paid = Ticket.query.filter_by(payment_method='bank', status='paid').count()
+    
     recent_users = User.query.order_by(User.created_at.desc()).limit(10).all()
     recent_tickets = Ticket.query.order_by(Ticket.created_at.desc()).limit(10).all()
     
@@ -365,6 +382,10 @@ def admin_dashboard():
                          total_tickets=total_tickets,
                          paid_tickets=paid_tickets,
                          pending_tickets=pending_tickets,
+                         qr_tickets=qr_tickets,
+                         bank_tickets=bank_tickets,
+                         qr_paid=qr_paid,
+                         bank_paid=bank_paid,
                          recent_users=recent_users,
                          recent_tickets=recent_tickets)
 

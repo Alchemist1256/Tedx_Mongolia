@@ -169,7 +169,7 @@ a{
   text-transform: uppercase;
 }
 .cover-title-first{
-  color: black;
+  color: white;
 }
 .cover-title-second{
   color: var(--secondary-color);
@@ -992,4 +992,5 @@ a{
 /* ------------------------------ */
 /* END */
 /* ------------------------------ */
+
 

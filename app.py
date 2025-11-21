@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request, jsonify
+from flask import Flask, render_template, session, redirect, url_for, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import os
@@ -10,6 +10,16 @@ import base64
 from datetime import datetime
 
 app = Flask(__name__)
+@app.route('/sitemap.xml')
+def sitemap():
+    response = make_response(render_template('sitemap.xml'))
+    response.headers['Content-Type'] = 'application/xml'
+    return response
+@app.route('/robots.txt')
+def robots():
+    return app.send_static_file('robots.txt')
+
+
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
 # Database config

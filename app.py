@@ -258,14 +258,8 @@ def buy():
                 error_msg = f"Серверт алдаа гарлаа: {str(e)}"
 
     return render_template(
-        "buy.html",
-        user=user,
-        amount=amount,
-        payment_url=payment_url,
-        error_msg=error_msg,
-        api_response=api_response,
-        qr_code_base64=qr_code_base64,
-        show_bank_transfer=show_bank_transfer
+        "sold.html",
+
     )
 
 # ---------- Callback ----------

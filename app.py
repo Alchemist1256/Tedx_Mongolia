@@ -195,10 +195,7 @@ def buy():
             
             show_bank_transfer = True
             return render_template(
-                "buy.html",
-                user=user,
-                amount=amount,
-                show_bank_transfer=show_bank_transfer
+                "sold.html",
             )
         
         # Handle QR payment option
